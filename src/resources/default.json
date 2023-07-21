@@ -10,10 +10,10 @@
     "crt_shader": "shaders/crt",
     "bell": "bell.wav",
     "crt_warp": 0.0,
-    "shell_command": "wsl.exe",
+    "shell_command": "cmd.exe",
     "blink_interval": 300,
-    "default_fg": 6,
-    "default_bg": 6,
+    "default_fg": 2,
+    "default_bg": 2,
 
     "color_scheme":
     [

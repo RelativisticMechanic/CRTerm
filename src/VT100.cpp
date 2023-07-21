@@ -1,7 +1,9 @@
 #include <iostream>
 #include <conio.h>
+#include <Windows.h>
 #include "VT100.h"
 #include "ConPTY.h"
+#include "Win32ClipBoard.h"
 
 void __cdecl outputListener(LPVOID term);
 
@@ -11,8 +13,11 @@ VT100::VT100(CRTermConfiguration* cfg)
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
 	this->CTRL_down = false;
+	this->is_selected = false;
 	this->parser_state = VTSTATE_NORMAL;
 	this->console_window = GetActiveWindow();
+
+	this->font_scale = cfg->font_scale;
 	HRESULT hr = CreatePseudoConsoleAndPipes(&hPC, &fromProgram, &toProgram, con->console_w, con->console_h);
 	if (hr != S_OK)
 	{
@@ -420,6 +425,60 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 			this->CTRL_down = false;
 		}
 		break;
+	case SDL_MOUSEBUTTONDOWN:
+		if (ev.button.button == SDL_BUTTON_LEFT)
+		{
+			getConsoleMouseCoords(&(this->selected_start_x), &(this->selected_start_y));
+			getConsoleMouseCoords(&(this->selected_end_x), &(this->selected_end_y));
+			this->is_dragging = true;
+		}
+		break;
+	case SDL_MOUSEMOTION:
+		if (this->is_dragging)
+		{
+			getConsoleMouseCoords(&(this->selected_end_x), &(this->selected_end_y));
+		}
+		break;
+	case SDL_MOUSEBUTTONUP:
+		if (ev.button.button == SDL_BUTTON_LEFT)
+		{
+			/* If the start and end position are not the same, then only select. */
+			if (this->selected_end_x != this->selected_start_x || this->selected_start_y != this->selected_end_y)
+			{
+				this->is_selected = true;
+			}
+			else
+			{
+				this->is_selected = false;
+			}
+			this->is_dragging = false;
+		}
+		else if (ev.button.button == SDL_BUTTON_RIGHT)
+		{
+			/* If selected and user presses right click, copy to clipboard */
+			if (this->is_selected)
+			{
+				std::string result = "";
+				orientSelectedCoords();
+				for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
+				{
+					for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
+					{
+						result += this->con->ReadChar(x, y);
+					}
+				}
+				CopyToClipboard(result);
+				this->is_selected = false;
+			}
+			else
+			{
+				// Paste from clipboard also escape the string
+				std::string clipboard = "\x1B[200~" + GetFromClipboard() + "\x1B[201~";
+				// Send to program!
+				WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
+			}
+		}
+		break;
 	case SDL_QUIT:
 		VT100Shutdown();
 		break;
@@ -428,6 +487,25 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	}
 }
 
+void VT100::VT100Render(GPU_Target* t)
+{
+	this->con->Render(t, 0, 0, this->font_scale);
+	GPU_DeactivateShaderProgram();
+	// Draw overlay above the selected text
+	if (is_selected || is_dragging)
+	{
+		orientSelectedCoords();
+		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
+		{
+			for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
+			{
+				int sx, sy;
+				consoleToScreenCoords(x, y, &sx, &sy);
+				GPU_RectangleFilled(t, sx, sy, sx + this->con->font_w * this->font_scale, sy + this->con->font_h * this->font_scale, SDL_Color{255, 255, 255, 192});
+			}
+		}
+	}
+}
 void VT100::VT100Shutdown()
 {
 	// Sent exit to shell

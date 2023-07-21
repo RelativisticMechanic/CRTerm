@@ -140,6 +140,7 @@
     <ClCompile Include="CRTerm.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="VT100.cpp" />
+    <ClCompile Include="Win32ClipBoard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConPTY.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="NlohmannJSON.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="VT100.h" />
+    <ClInclude Include="Win32ClipBoard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

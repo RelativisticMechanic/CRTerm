@@ -54,6 +54,7 @@ public:
 
 	Console(CRTermConfiguration*);
 	void PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color);
+	unsigned char ReadChar(int x, int y);
 	void PutCharExt(unsigned char c, int fore_color, int back_color);
 	void PutChar(unsigned char c);
 	void Puts(std::string s);

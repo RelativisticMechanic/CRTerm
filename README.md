@@ -29,12 +29,13 @@ A subset of VT100 is supported, although it is still buggy (vim for example is g
 
 Once again, this is a WIP project.
 
-## Planned Features
+## Features
 
-* Support for VT220
-* Mouse interactivity
-* Scrollback w/ history
-* Multiple tabs
+* Subset of VT220 is supported
+* Mouse selection (copy-pasted)
+* 16-color palette
+
+Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
 ## Building
 

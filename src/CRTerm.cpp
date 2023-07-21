@@ -29,12 +29,17 @@ int main()
 		return 1;
 	}
 
-	
 	SDL_Event ev;
 	bool done = false;
 	VT100* vt100_term = new VT100(cfg);
+
+	/* Set the cursor to I beam */
+	SDL_Cursor* cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	SDL_SetCursor(cur);
+
 	while (!done)
 	{
+
 		while (SDL_PollEvent(&ev))
 		{
 			if (ev.type == SDL_QUIT)
@@ -44,8 +49,8 @@ int main()
 
 			vt100_term->VT100HandleEvent(ev);
 		}
-		GPU_ClearColor(screen, SDL_Color{ 0, 255, 0, 255 });
-		vt100_term->con->Render(screen, 0, 0, cfg->font_scale);
+		GPU_Clear(screen);
+		vt100_term->VT100Render(screen);
 		GPU_Flip(screen);
 	}
 	SDL_Quit();

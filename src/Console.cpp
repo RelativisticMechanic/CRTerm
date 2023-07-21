@@ -272,6 +272,12 @@ void Console::HideCursor()
 	this->show_cursor = false;
 }
 
+unsigned char Console::ReadChar(int x, int y)
+{
+	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h)
+		return 0;
+	return this->buffer[y * this->console_w + x];
+}
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
