@@ -2,12 +2,14 @@
 #include <iostream>
 #include <conio.h>
 
-VT100::VT100(Console* con)
+VT100::VT100(Console* con, HANDLE input, HWND window)
 {
 	this->con = con;
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
 	this->parser_state = VTSTATE_NORMAL;
+	this->input_handle = input;
+	this->console_window = window;
 }
 
 // Takes an input, sets the relevant VT100 states
@@ -92,7 +94,11 @@ void VT100::VT100Take(unsigned char c)
 		if (c == '\x7')
 		{
 			parser_state = VTSTATE_NORMAL;
-
+			// Set the window title to 0 string
+			std::string window_title = "CRTerm.exe - " + this->control_strings[0];
+			std::wstring window_title_wide = std::wstring(window_title.begin(), window_title.end());
+			SetWindowText(this->console_window, (LPCWSTR)window_title_wide.c_str());
+			std::cout << window_title << std::endl;
 		}
 		else
 		{
@@ -185,6 +191,10 @@ void VT100::VT100Take(unsigned char c)
 				{
 					con->SetCursor(0, con->cursor_y);
 				}
+				else
+				{
+					con->SetCursor(argument_stack[0].value - 1, con->cursor_y);
+				}
 				break;
 			case 'd':
 				/* Cursor left P1 columns */
@@ -198,7 +208,23 @@ void VT100::VT100Take(unsigned char c)
 				}
 				else if (stack_ptr == 2)
 				{
-					this->con->SetCursor(argument_stack[1].value - 1, argument_stack[0].value - 1);
+					if (argument_stack[0].empty)
+					{
+						this->con->SetCursorY(0);
+					}
+					else
+					{
+						this->con->SetCursorY(argument_stack[0].value - 1);
+					}
+
+					if (argument_stack[1].empty)
+					{
+						this->con->SetCursorX(0);
+					}
+					else
+					{
+						this->con->SetCursorX(argument_stack[1].value - 1);
+					}
 				}
 				break;
 			case 'J':
@@ -219,8 +245,7 @@ void VT100::VT100Take(unsigned char c)
 						this->con->ClearExt(0, 0, con->cursor_x, con->cursor_x);
 						break;
 					case 2:
-						this->con->ClearExt(0, 0, con->console_w, con->console_h - 1);
-						this->con->SetCursor(0, 0);
+						this->con->ClearExt(0, 0, con->console_w - 1, con->console_h - 1);
 						break;
 					default:
 						break;
@@ -269,14 +294,21 @@ void VT100::VT100Take(unsigned char c)
 						}
 						else if (attr >= 30 && attr <= 37) // Set foreground color
 						{
-
-							this->fg = attr - 30;
+							this->fg = (attr - 30) % 8;
 						}
 						else if (attr >= 40 && attr <= 47) // Set background color
 						{
-							this->bg = attr - 40;
+							this->bg = (attr - 40) % 8;
 						}
 					}
+				}
+				break;
+			case 'n':
+				/* Report terminal parameters */
+				if (argument_stack[0].value == 6)
+				{
+					std::string term_info = "\x1B[" + std::to_string(con->cursor_y) + ';' + std::to_string(con->cursor_x) + 'R';
+					WriteFile(this->input_handle, term_info.c_str(), term_info.length(), NULL, NULL);
 				}
 				break;
 			case 'S':
@@ -312,8 +344,6 @@ void VT100::VT100Take(unsigned char c)
 		}
 		parser_state = VTSTATE_NORMAL;
 	}
-	
-	
 }
 
 void VT100::VT100Putc(unsigned char c)

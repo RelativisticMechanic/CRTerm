@@ -1,8 +1,10 @@
 #ifndef VT100_H
 #define VT100_H
 
-#include "Console.h"
+#include <Windows.h>
 #include <string>
+#include "Console.h"
+
 
 #define VT100_ARG_STACK_SIZE 8
 #define VT100_STRING_SIZE 8
@@ -38,8 +40,10 @@ private:
 	int control_string_idx;
 	int stack_ptr;
 
+	HANDLE input_handle;
+	HWND console_window;
 public:
-	VT100(Console*);
+	VT100(Console*, HANDLE, HWND);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);
 };

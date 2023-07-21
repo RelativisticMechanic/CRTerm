@@ -9,10 +9,10 @@
     "text_shader": "shaders/text",
     "crt_shader": "shaders/crt",
     "bell": "bell.wav",
-    "shell_command": "cmd.exe",
+    "shell_command": "wsl.exe",
     "blink_interval": 300,
-    "default_fg": 2,
-    "default_bg": 2,
+    "default_fg": 6,
+    "default_bg": 6,
 
     "color_scheme":
     [

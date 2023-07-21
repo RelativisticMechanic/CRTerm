@@ -85,7 +85,7 @@ int main()
 	SDL_Event ev;
 	bool done = false;
 	Console* console = new Console(cfg);
-	vt100_term = new VT100(console);
+	vt100_term = new VT100(console, hPipeOut, GetActiveWindow());
 	console->Puts("Terminal initialized.\n");
 	console->Puts("Loading shell...\n");
 	// Link Pipe to Listener thread
@@ -132,7 +132,7 @@ int main()
 
 				if (ev.key.keysym.sym == SDLK_RIGHT)
 				{
-					const char* out = "\x1B[D";
+					const char* out = "\x1B[C";
 					WriteFile(hPipeOut, out, strlen(out), NULL, NULL);
 				}
 
@@ -144,7 +144,7 @@ int main()
 
 				if (ev.key.keysym.sym == SDLK_LEFT)
 				{
-					const char* out = "\x1B[C";
+					const char* out = "\x1B[D";
 					WriteFile(hPipeOut, out, strlen(out), NULL, NULL);
 				}
 

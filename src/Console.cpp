@@ -94,20 +94,32 @@ void Console::Clear()
 void Console::ClearExt(int fromx, int fromy, int tox, int toy)
 {
 	if (fromx < 0)
-		fromx = 0;
-	if (fromx > this->console_w)
-		fromx = this->console_w - 1;
-	if (fromy < 0)
-		fromy = 0;
-	if (fromy > this->console_h)
-		fromy = this->console_h - 1;
-
-	for (int y = fromy; y <= toy; y++)
 	{
-		for (int x = fromx; x <= tox; x++)
-		{
-			this->PlaceChar(x, y, ' ', this->default_back_color, this->default_back_color);
-		}
+		fromx = 0;
+	}
+	if (tox >= this->console_w)
+	{
+		tox = this->console_w - 1;
+	}
+	if (fromy < 0)
+	{
+		fromy = 0;
+	}
+	if (toy >= this->console_h)
+	{
+		toy = this->console_h - 1;
+	}
+
+	if (fromx > tox)
+		return;
+
+	if (fromy > toy)
+		return;
+
+	for (int i = fromx + fromy * this->console_w; i < tox + toy * this->console_w; i++)
+	{
+		this->buffer[i] = ' ';
+		this->attrib_buffer[i] = CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color);
 	}
 }
 
@@ -187,7 +199,7 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 	}
 	else if (c == '\r')
 	{
-		// Don't print
+		this->cursor_x = 0;
 	}
 	else if (c == '\b')
 	{
@@ -207,7 +219,11 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 	}
 	else if (c == '\t')
 	{
-		this->cursor_x += 4;
+		int n = 8 - (this->cursor_x % 8);
+		for (int i = 0; i < n; i++)
+		{
+			this->PutCharExt(' ', fore_color, back_color);
+		}
 	}
 	else
 	{
