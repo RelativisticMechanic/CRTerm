@@ -25,8 +25,9 @@ const float background_brightness = 0.25;
 const float crt_noise_fraction = 0.1;
 
 // CRT Effect settings
-float warp = 0.85; // simulate curvature of CRT monitor
-float scan = 0.75; // simulate darkness between scanlines
+// simulate curvature of CRT monitor
+uniform float warp; 
+float scan = 0.75;
 float scanline_speed = 0.85;
 float scanline_intensity = 0.08;
 

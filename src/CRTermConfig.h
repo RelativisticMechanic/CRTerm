@@ -28,6 +28,7 @@ public:
 	int default_fore_color;
 	int default_back_color;
 	int blink_interval;
+	float crt_warp;
 	CRTermColor color_scheme[16];
 
 	CRTermConfiguration(std::string json_path);

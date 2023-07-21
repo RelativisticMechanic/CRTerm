@@ -24,7 +24,8 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		this->blink_interval = configuration_data.at("blink_interval");
 		this->default_fore_color = configuration_data.at("default_fg");
 		this->default_back_color = configuration_data.at("default_bg");
-		
+		this->crt_warp = configuration_data.at("crt_warp");
+
 		int i = 0;
 		for (auto& color : configuration_data.at("color_scheme"))
 		{

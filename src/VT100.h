@@ -63,6 +63,9 @@ public:
 		{ SDLK_LEFT, "\x1B[D" }
 	};
 
+	// For sending control sequences
+	bool CTRL_down;
+
 	VT100(CRTermConfiguration*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);

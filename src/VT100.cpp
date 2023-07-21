@@ -10,6 +10,7 @@ VT100::VT100(CRTermConfiguration* cfg)
 	this->con = new Console(cfg);
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
+	this->CTRL_down = false;
 	this->parser_state = VTSTATE_NORMAL;
 	this->console_window = GetActiveWindow();
 	HRESULT hr = CreatePseudoConsoleAndPipes(&hPC, &fromProgram, &toProgram, con->console_w, con->console_h);
@@ -60,6 +61,10 @@ void VT100::VT100Take(unsigned char c)
 		{
 			parser_state = VTSTATE_CONTROL_STRING;
 			control_string_idx = 0;
+			for (int i = 0; i < VT100_STRING_SIZE; i++)
+			{
+				this->control_strings[i] = "";
+			}
 		}
 		else
 		{
@@ -114,7 +119,6 @@ void VT100::VT100Take(unsigned char c)
 			std::string window_title = "CRTerm.exe - " + this->control_strings[0];
 			std::wstring window_title_wide = std::wstring(window_title.begin(), window_title.end());
 			SetWindowText(this->console_window, (LPCWSTR)window_title_wide.c_str());
-			std::cout << window_title << std::endl;
 		}
 		else
 		{
@@ -316,6 +320,18 @@ void VT100::VT100Take(unsigned char c)
 						{
 							this->bg = (attr - 40) % 8;
 						}
+
+						// 39 and 49 set default fg and bg
+						if (attr == 39)
+						{
+							this->fg = this->con->default_fore_color;
+						}
+
+						if (attr == 49)
+						{
+							this->bg = this->con->default_back_color;
+						}
+
 					}
 				}
 				break;
@@ -381,6 +397,27 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 		{
 			std::string ansi_sequence = special_key_map[(int)ev.key.keysym.sym];
 			WriteFile(this->toProgram, ansi_sequence.c_str(), ansi_sequence.length(), NULL, NULL);
+		}
+
+		if (ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL)
+		{
+			this->CTRL_down = true;
+		}
+
+		// If CTRL is down WITH C... send break.
+		if (this->CTRL_down)
+		{
+			if (ev.key.keysym.sym == SDLK_c)
+			{
+				const char brk_char = '\x3';
+				WriteFile(this->toProgram, &brk_char, 1, NULL, NULL);
+			}
+		}
+		break;
+	case SDL_KEYUP:
+		if (ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL)
+		{
+			this->CTRL_down = false;
 		}
 		break;
 	case SDL_QUIT:

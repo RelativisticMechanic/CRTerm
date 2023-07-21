@@ -77,6 +77,7 @@ private:
 	GPU_ShaderBlock crt_shader_block, text_shader_block;
 	GPU_Image* render_buffer;
 	float cursor_clock;
+	float crt_warp;
 	bool show_cursor;
 };
 

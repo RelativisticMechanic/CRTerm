@@ -75,6 +75,8 @@ Console::Console(CRTermConfiguration* cfg)
 	{
 		this->color_scheme[i] = ConsoleColor(cfg->color_scheme[i].r, cfg->color_scheme[i].g, cfg->color_scheme[i].b);
 	}
+
+	this->crt_warp = cfg->crt_warp;
 	// Clear the console
 	this->Clear();
 }
@@ -314,6 +316,8 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	// The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 	float resolution[2] = { (float)t->w, (float)t->h };
+	// Set shader parameters
+	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), time/1000.0);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
 	// Pass the back color to give the glow accent
