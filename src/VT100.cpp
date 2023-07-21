@@ -1,15 +1,31 @@
-#include "VT100.h"
 #include <iostream>
 #include <conio.h>
+#include "VT100.h"
+#include "ConPTY.h"
 
-VT100::VT100(Console* con, HANDLE input, HWND window)
+void __cdecl outputListener(LPVOID term);
+
+VT100::VT100(CRTermConfiguration* cfg)
 {
-	this->con = con;
+	this->con = new Console(cfg);
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
 	this->parser_state = VTSTATE_NORMAL;
-	this->input_handle = input;
-	this->console_window = window;
+	this->console_window = GetActiveWindow();
+	HRESULT hr = CreatePseudoConsoleAndPipes(&hPC, &fromProgram, &toProgram, con->console_w, con->console_h);
+	if (hr != S_OK)
+	{
+		fprintf(stderr, "Error while creating pseudoconsole.\n");
+	}
+	// Link Pipe to Listener thread
+	output_listener_thread = { reinterpret_cast<HANDLE>(_beginthread(outputListener, 0, this)) };
+	// Start the process
+	std::wstring process_name = std::wstring(cfg->shell_command.begin(), cfg->shell_command.end());
+	con->Puts("Terminal initialized.\n");
+	con->Puts("Loading shell...\n");
+	SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
+	// Wait
+	Sleep(200);
 }
 
 // Takes an input, sets the relevant VT100 states
@@ -307,8 +323,8 @@ void VT100::VT100Take(unsigned char c)
 				/* Report terminal parameters */
 				if (argument_stack[0].value == 6)
 				{
-					std::string term_info = "\x1B[" + std::to_string(con->cursor_y) + ';' + std::to_string(con->cursor_x) + 'R';
-					WriteFile(this->input_handle, term_info.c_str(), term_info.length(), NULL, NULL);
+					std::string term_info = "\x1B[" + std::to_string(con->cursor_y + 1) + ';' + std::to_string(con->cursor_x + 1) + 'R';
+					WriteFile(this->toProgram, term_info.c_str(), term_info.length(), NULL, NULL);
 				}
 				break;
 			case 'S':
@@ -337,9 +353,11 @@ void VT100::VT100Take(unsigned char c)
 		{
 		case 'h':
 			/* Show cursor */
+			this->con->ShowCursor();
 			break;
 		case 'l':
 			/* Hide cursor */
+			this->con->HideCursor();
 			break;
 		}
 		parser_state = VTSTATE_NORMAL;
@@ -349,4 +367,59 @@ void VT100::VT100Take(unsigned char c)
 void VT100::VT100Putc(unsigned char c)
 {
 	this->con->PutCharExt(c, this->fg, this->bg);
+}
+
+void VT100::VT100HandleEvent(SDL_Event ev)
+{
+	switch (ev.type)
+	{
+	case SDL_TEXTINPUT:
+		WriteFile(this->toProgram, &(ev.text.text[0]), 1, NULL, NULL);
+		break;
+	case SDL_KEYDOWN:
+		if (special_key_map.find((int)ev.key.keysym.sym) != special_key_map.end())
+		{
+			std::string ansi_sequence = special_key_map[(int)ev.key.keysym.sym];
+			WriteFile(this->toProgram, ansi_sequence.c_str(), ansi_sequence.length(), NULL, NULL);
+		}
+		break;
+	case SDL_QUIT:
+		VT100Shutdown();
+		break;
+	default:
+		break;
+	}
+}
+
+void VT100::VT100Shutdown()
+{
+	// Sent exit to shell
+	TerminateProcess(cmd_process.hProcess, 0);
+	// Close handles
+	ClosePseudoConsole(this->hPC);
+	CloseHandle(this->fromProgram);
+	CloseHandle(this->toProgram);
+}
+// Functions that listens to the program output.
+void __cdecl outputListener(LPVOID term)
+{
+	const DWORD BUFF_SIZE { 8192 };
+	char szBuffer[BUFF_SIZE]{};
+	DWORD dwBytesWritten{};
+	DWORD dwBytesRead{};
+	BOOL fRead{ FALSE };
+	VT100* vt100_term = (VT100*)term;
+	do
+	{
+		// Read from the pipe
+		fRead = ReadFile(vt100_term->fromProgram, szBuffer, BUFF_SIZE, &dwBytesRead, NULL);
+		// Write received text to the Console
+		for (int i = 0; i < dwBytesRead; i++)
+		{
+			if (szBuffer[i] == '\0')
+				break;
+			vt100_term->VT100Take(szBuffer[i]);
+		}
+
+	} while (fRead && dwBytesRead >= 0);
 }

@@ -41,7 +41,7 @@ HRESULT InitializeStartupInfoAttachedToPseudoConsole(STARTUPINFOEX* pStartupInfo
     return hr;
 }
 
-HRESULT SpawnProcessinConsole(wchar_t* szCommand, HPCON hPC)
+HRESULT SpawnProcessinConsole(wchar_t* szCommand, HPCON hPC, PROCESS_INFORMATION* piClient)
 {
     // Initialize the necessary startup info struct        
     STARTUPINFOEX startupInfo{};
@@ -49,7 +49,6 @@ HRESULT SpawnProcessinConsole(wchar_t* szCommand, HPCON hPC)
     if (S_OK == InitializeStartupInfoAttachedToPseudoConsole(&startupInfo, hPC))
     {
         // Launch ping to emit some text back via the pipe
-        PROCESS_INFORMATION piClient{};
         hr = CreateProcessW(
             NULL,                           // No module name - use Command Line
             szCommand,                      // Command Line
@@ -60,7 +59,7 @@ HRESULT SpawnProcessinConsole(wchar_t* szCommand, HPCON hPC)
             NULL,                           // Use parent's environment block
             NULL,                           // Use parent's starting directory 
             &startupInfo.StartupInfo,       // Pointer to STARTUPINFO
-            &piClient)                      // Pointer to PROCESS_INFORMATION
+            piClient)                      // Pointer to PROCESS_INFORMATION
             ? S_OK
             : GetLastError();
     }

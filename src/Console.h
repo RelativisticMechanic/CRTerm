@@ -25,9 +25,9 @@ public:
 		this->r = r;
 		this->g = g;
 		this->b = b;
-		this->glsl_value[0] = (float)r / 255.0;
-		this->glsl_value[1] = (float)g / 255.0;
-		this->glsl_value[2] = (float)b / 255.0;
+		this->glsl_value[0] = (float)r / (float)255.0;
+		this->glsl_value[1] = (float)g / (float)255.0;
+		this->glsl_value[2] = (float)b / (float)255.0;
 	}
 
 	float* returnArray()
@@ -63,6 +63,8 @@ public:
 	void SetCursor(int x, int y);
 	void SetCursorX(int x);
 	void SetCursorY(int y);
+	void ShowCursor();
+	void HideCursor();
 	void PlayBell();
 	void ClearExt(int fromx, int fromy, int tox, int toy);
 	// 256 letters

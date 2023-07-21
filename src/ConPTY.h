@@ -3,7 +3,7 @@
 
 #include <Windows.h>
 
-HRESULT SpawnProcessinConsole(wchar_t szCommand[], HPCON hPC);
+HRESULT SpawnProcessinConsole(wchar_t szCommand[], HPCON, PROCESS_INFORMATION*);
 HRESULT CreatePseudoConsoleAndPipes(HPCON* phPC, HANDLE* phPipeIn, HANDLE* phPipeOut, SHORT consoleWidth, SHORT consoleHeight);
 
 #endif

@@ -260,6 +260,16 @@ void Console::Puts(std::string s)
 	}
 }
 
+void Console::ShowCursor()
+{
+	this->show_cursor = true;
+}
+
+void Console::HideCursor()
+{
+	this->show_cursor = false;
+}
+
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
@@ -311,6 +321,6 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	// Pass the CRT background image to blend with
 	GPU_SetShaderImage(this->crt_background, GPU_GetUniformLocation(this->crt_shader_id, "crt_background"), 1);
 	// Now blit to screen!
-	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (this->render_buffer->w / 2) * scale, yloc + (this->render_buffer->h / 2) * scale, scale, scale);
+	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
 }

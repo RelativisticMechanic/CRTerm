@@ -25,9 +25,10 @@ const float background_brightness = 0.25;
 const float crt_noise_fraction = 0.1;
 
 // CRT Effect settings
-float warp = 1.15; // simulate curvature of CRT monitor
+float warp = 0.85; // simulate curvature of CRT monitor
 float scan = 0.75; // simulate darkness between scanlines
 float scanline_speed = 0.85;
+float scanline_intensity = 0.08;
 
 vec4 crtGlow(in vec2 uv)
 {
@@ -127,14 +128,14 @@ void main(void)
     // sample inside boundaries, otherwise set to transparent
     if (uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0)
     {
-        fragColor = vec4(0.0,1.0,0.0,1.0);
+        fragColor = vec4(0.0,0.0,0.0,1.0);
     }
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
     	fragColor = vec4(mix(crtGlow(uv).rgb, vec3(0.0),apply),1.0);
         fragColor = vec4(mix(fragColor.rgb, length(texture(crt_background, uv).rgb)*back_color, background_brightness),1.0);
         // Add scanline going up and down
-        fragColor.rgb += 0.05*(exp(-5.0*abs(sin(abs((1-uv.y) - abs(cos(scanline_speed*time)*cos(scanline_speed*time)))))))*back_color;
+        fragColor.rgb += scanline_intensity*(exp(-5.0*abs(sin(abs((1-uv.y) - abs(cos(scanline_speed*time)*cos(scanline_speed*time)))))))*back_color;
         // Add noise
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
     }

@@ -3,8 +3,10 @@
 
 #include <Windows.h>
 #include <string>
+#include <map>
+#include "SDL_gpu.h"
 #include "Console.h"
-
+#include "CRTermConfig.h"
 
 #define VT100_ARG_STACK_SIZE 8
 #define VT100_STRING_SIZE 8
@@ -29,7 +31,7 @@ typedef struct
 
 class VT100
 {
-private:
+public:
 	Console* con;
 	int fg;
 	int bg;
@@ -40,12 +42,32 @@ private:
 	int control_string_idx;
 	int stack_ptr;
 
-	HANDLE input_handle;
+	//HANDLE input_handle;
+	HPCON hPC { INVALID_HANDLE_VALUE };
+	HANDLE fromProgram { INVALID_HANDLE_VALUE };
+	HANDLE toProgram { INVALID_HANDLE_VALUE };
+	HANDLE output_listener_thread;
+	PROCESS_INFORMATION cmd_process;
 	HWND console_window;
-public:
-	VT100(Console*, HANDLE, HWND);
+
+	// Special key map
+	std::unordered_map<int, std::string> special_key_map = {
+		{ SDLK_RETURN, "\r" },
+		{ SDLK_RETURN2, "\r"},
+		{ SDLK_BACKSPACE, "\b" },
+		{ SDLK_TAB, "\t" },
+		{ SDLK_ESCAPE, "\x1B" },
+		{ SDLK_UP, "\x1B[A" },
+		{ SDLK_DOWN, "\x1B[B" },
+		{ SDLK_RIGHT, "\x1B[C" },
+		{ SDLK_LEFT, "\x1B[D" }
+	};
+
+	VT100(CRTermConfiguration*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);
+	void VT100HandleEvent(SDL_Event);
+	void VT100Shutdown();
 };
 
 #endif

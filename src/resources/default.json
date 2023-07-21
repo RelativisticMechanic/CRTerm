@@ -11,8 +11,8 @@
     "bell": "bell.wav",
     "shell_command": "wsl.exe",
     "blink_interval": 300,
-    "default_fg": 6,
-    "default_bg": 6,
+    "default_fg": 2,
+    "default_bg": 2,
 
     "color_scheme":
     [
