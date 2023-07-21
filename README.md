@@ -15,11 +15,11 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 
 ## Motivation
 
-This project is inspired from SwordFish90's ![Cool-Retro-Term](https://github.com/Swordfish90/cool-retro-term). Unfortunately, this program while being cool, was only available for Linux / MacOS, so I decided to write one for Windows.
+This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com/Swordfish90/cool-retro-term). Unfortunately, this program while being cool, was only available for Linux / MacOS, so I decided to write one for Windows.
 
 ## Description
 
-Right now, it creates a borderless window, uses ![SDL2-GPU](https://github.com/grimfang4/sdl-gpu) to set up the screen and shaders and uses Win32's ConPTY to set up the pipes to the shell program. Error handling, and other things are non-existent right now, as I said, this is still a WIP.
+Right now, it creates a borderless window, uses [SDL2-GPU](https://github.com/grimfang4/sdl-gpu) to set up the screen and shaders and uses Win32's ConPTY to set up the pipes to the shell program. Error handling, and other things are non-existent right now, as I said, this is still a WIP.
 
 It does not support TrueType, instead it uses a Bitmap Font.
 
