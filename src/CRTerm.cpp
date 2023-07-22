@@ -22,7 +22,7 @@
 
 #undef main
 
-void menuCallBack(int item, void* term);
+void menuCallBack(int, void*);
 
 int main()
 {
@@ -58,8 +58,8 @@ int main()
 	ConfigSelector* cfg_load = new ConfigSelector();
 	cfg_load->show = false;
 
+	/* Store all the allocated classes in a nice array that'll be passed to the callback */
 	void** classes = (void**)calloc(3, sizeof(void*));
-
 	classes[0] = (void*)vt100_term;
 	classes[1] = (void*)cfg_edit;
 	classes[2] = (void*)cfg_load;

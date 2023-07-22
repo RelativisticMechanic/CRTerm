@@ -9,9 +9,9 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 
 <b>Note: This is a WIP, it is not ready for production!</b>
 
-| Amber with WSL | Green with cmd.exe |
-| -------------  | ------------------ |
-|![](images/wsl-amber.png)|![](images/cmd-green.png)|
+| NeoFetch | Amber with WSL | Green with cmd.exe | Config Editor |
+| -------- | -------------  | ------------------ | -----------   |
+|![](images/show.gif)|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
 
 ## Motivation
 
@@ -19,15 +19,11 @@ This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com
 
 ## Description
 
-Right now, it creates a borderless window, uses [SDL2-GPU](https://github.com/grimfang4/sdl-gpu) to set up the screen and shaders and uses Win32's ConPTY to set up the pipes to the shell program. Error handling, and other things are non-existent right now, as I said, this is still a WIP.
+The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the UI part, it employs Dear ImGui. It uses Nlohmann's JSON library and Sam Hocevar's portable file dialogs as well. It has a 16 color palette. The mouse is used for selection, copying and pasting.
 
-It does not support TrueType, instead it uses a Bitmap Font.
+The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. Ideally, you'll place all the require DLLs (SDL2.dll, SDL_gpu.dll, etc.) along with the EXE file and all the stuff in the src/resources directory.
 
-The terminal does not support history either. It simply scrolls.
-
-A subset of VT100 is supported, although it is still buggy (vim for example is glitchy).
-
-Once again, this is a WIP project.
+A release is planned in the near future.
 
 ## Features
 
@@ -39,4 +35,4 @@ Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
 ## Building
 
-Visual Studio 2022 is required. Windows 10 SDK (June 2018)+ is needed as it uses CreatePseudoConsole() and ConPTY.
+Visual Studio 2022 is required, it requires C++17. Windows 10 SDK (June 2018)+ is needed as it uses CreatePseudoConsole() and ConPTY.
