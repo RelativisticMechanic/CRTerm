@@ -1,3 +1,13 @@
+/*
+	CRTerm's configuration is loaded from a JSON file. The path to the JSON file is supposed
+	to be described by a file called "default" in CRTerm.exe's directory which should just
+	contain the path of the JSON (config / *.json).
+
+	This is the class responsible for loading and saving the JSON structure.
+
+	Nlohmann's JSON library is just awesome. 
+*/
+
 #ifndef CRTERM_CONFIG_H
 #define CRTERM_CONFIG_H
 

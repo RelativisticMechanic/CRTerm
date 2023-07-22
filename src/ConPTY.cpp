@@ -43,7 +43,7 @@ HRESULT InitializeStartupInfoAttachedToPseudoConsole(STARTUPINFOEX* pStartupInfo
 
 HRESULT SpawnProcessinConsole(wchar_t* szCommand, HPCON hPC, PROCESS_INFORMATION* piClient)
 {
-    // Initialize the necessary startup info struct        
+    /* Initialize the necessary startup info struct */
     STARTUPINFOEX startupInfo{};
     HRESULT hr = { E_UNEXPECTED };
     if (S_OK == InitializeStartupInfoAttachedToPseudoConsole(&startupInfo, hPC))

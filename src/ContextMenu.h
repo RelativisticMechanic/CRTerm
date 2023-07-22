@@ -1,3 +1,7 @@
+/*
+	The ContextMenu class, aka what appears when you right click on the terminal and
+	get options like "Copy", "Paste", etc.
+*/
 #ifndef CONTEXTMENU_H
 #define CONTEXTMENU_H
 

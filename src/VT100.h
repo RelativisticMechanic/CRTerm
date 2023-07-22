@@ -1,3 +1,13 @@
+/*
+	This is the VT100 class, it does everything from creating a Console class, creating the pipes,
+	launching the shell program.
+	
+	It is also what does the parsing of ESCAPE sequences received from
+	shell programs. It then interprets these sequences and calls the methods from the Console
+	class which is purely for rendering.
+
+	It also sends data to the program from the input received from SDL2.
+*/
 #ifndef VT100_H
 #define VT100_H
 
@@ -56,10 +66,11 @@ public:
 	PROCESS_INFORMATION cmd_process;
 	HWND console_window;
 
-	// Special key map
+	/* Special key map, maps SDL keycodes to VT100 sequences */
 	std::unordered_map<int, std::string> special_key_map = {
 		{ SDLK_RETURN, "\r" },
 		{ SDLK_RETURN2, "\r"},
+		{ SDLK_KP_ENTER, "\r" },
 		{ SDLK_BACKSPACE, "\b" },
 		{ SDLK_TAB, "\t" },
 		{ SDLK_ESCAPE, "\x1B" },
@@ -69,10 +80,10 @@ public:
 		{ SDLK_LEFT, "\x1B[D" }
 	};
 
-	// For sending control sequences
+	/* For sending ^C */
 	bool CTRL_down;
 
-	// For mouse interactivity
+	/* Required for mouse interactivty */
 	float font_scale;
 
 	VT100(CRTermConfiguration*);
@@ -86,7 +97,7 @@ public:
 
 	inline void screenToConsoleCoords(int screenx, int screeny, int* conx, int* cony)
 	{
-		// Translate from screen coordinates to console coordinates
+		/* Translate from screen coordinates to console coordinates */
 		float screen_unscaled_x = screenx / font_scale;
 		float screen_unscaled_y = screeny / font_scale;
 
@@ -109,7 +120,7 @@ public:
 		screenToConsoleCoords(mouse_x, mouse_y, conx, cony);
 	}
 
-	// In case the user tries a funky way of selection
+	/* In case the user tries a funky way of selection */
 	inline void orientSelectedCoords(void)
 	{
 		if (this->selected_start_x > this->selected_end_x)

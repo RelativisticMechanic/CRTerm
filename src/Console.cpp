@@ -11,7 +11,7 @@
 
 Console::Console(CRTermConfiguration* cfg)
 {
-	// Initialise console dimensions
+	/* Initialise console dimensions */
 	this->console_w = cfg->console_width;
 	this->console_h = cfg->console_height;
 	this->font_w = cfg->font_width;
@@ -25,24 +25,26 @@ Console::Console(CRTermConfiguration* cfg)
 
 	this->default_fore_color = cfg->default_fore_color;
 	this->default_back_color = cfg->default_back_color;
-	// Create the character and attribute buffers
+	/* Create the character and attribute buffers */
 	this->buffer = (unsigned char*)calloc(this->console_w * this->console_h, sizeof(char));
 	this->attrib_buffer = (unsigned char*)calloc(this->console_w * this->console_h, sizeof(char));
 
-	// Load the font and the background image
+	/* Load the font and the background image */
 	this->console_font = GPU_LoadImage(cfg->bitmap_font_file.c_str());
 	this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
 
-	// Load the bell sound
+	/* Load the bell sound */
 	std::ifstream bell_file;
-	bell_file.open(cfg->bell_sound); //open the input file
+	bell_file.open(cfg->bell_sound);
 
 	std::stringstream str_bell_stream;
-	str_bell_stream << bell_file.rdbuf(); //read the file
+	str_bell_stream << bell_file.rdbuf();
 	this->bell_wave_file = str_bell_stream.str();
 
-	// Now create 256 targets each containing 
-	// the data from the font file
+	/* 
+	Now create 256 GPU_Targets each containing
+	the character data from the file.
+	*/
 	int chars_per_row = this->console_font->w / this->font_w;
 	for (int i = 0; i < 256; i++)
 	{
@@ -57,32 +59,33 @@ Console::Console(CRTermConfiguration* cfg)
 		{
 			std::cout << "Warning: GPU_LoadTarget Failed!" << std::endl;
 		}
-		// The target is the character image 
 		GPU_Blit(this->console_font, &r, tg, this->font_w / 2.0, this->font_h / 2.0);
 	}
 
-	// Separate render buffer for rendering the console before scaling it.
+	/* Separate render buffer for rendering the console before scaling it. */
 	this->render_buffer = GPU_CreateImage(this->console_resolution_x, this->console_resolution_y, GPU_FORMAT_RGBA);
 	GPU_LoadTarget(this->render_buffer);
 
-	// Load shaders
+	/* Load shaders */
 	this->crt_shader_block = loadShaderProgram(&this->crt_shader_id, cfg->shader_path_crt);
 	this->text_shader_block = loadShaderProgram(&this->text_shader_id, cfg->shader_path_text);
 
-	// Cursor clock for blinking
+	/* Cursor clock for blinking */
 	this->blink_interval = cfg->blink_interval;
 	this->cursor_clock = GetTickCount64();
 	this->prev_time = GetTickCount64();
 	this->show_cursor = true;
 
-	// Load the color scheme
+	/* Load the color scheme */
 	for (int i = 0; i < 16; i++)
 	{
 		this->color_scheme[i] = ConsoleColor(cfg->color_scheme[i].r, cfg->color_scheme[i].g, cfg->color_scheme[i].b);
 	}
 
+	/* Set CRT effect parameters from configuration */
 	this->crt_warp = cfg->crt_warp;
-	// Clear the console
+
+	/* Clear the console */
 	this->Clear();
 }
 
@@ -136,7 +139,7 @@ void Console::ClearExt(int fromx, int fromy, int tox, int toy)
 
 void Console::LimitCursor()
 {
-	// Limit checks for cursor_x and cursor_y, don't go beyond the screen!
+	/* Limit checks for cursor_x and cursor_y, don't go beyond the screen! */
 	if (this->cursor_x < 0)
 	{
 		this->cursor_x = 0;
@@ -157,10 +160,10 @@ void Console::LimitCursor()
 
 void Console::Scroll()
 {
-	// Scroll up by 1 line
+	/* Scroll up by 1 line */
 	memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(char) * 1 * this->console_w), this->console_w * (this->console_h - 1));
 	memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(char) * this->console_w), this->console_w * (this->console_h - 1));
-	// Empty last line
+	/* Empty last line */
 	memset((void*)((uintptr_t)this->buffer + sizeof(char) * (this->console_h - 1) * this->console_w), ' ', this->console_w);
 	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(char) * (this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
 	this->cursor_y -= 1;
@@ -235,7 +238,7 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 	else
 	{
 		this->PlaceChar(this->cursor_x, this->cursor_y, chr, fore_color, back_color);
-		/* Add cursor shadow */
+		/* Set cursor shadow, this is what creates the cursor "burn in" effect */
 		this->cursor_shadow_width = this->font_w * 2;
 		this->cursor_x += 1;
 	}
@@ -294,9 +297,9 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	GPU_Clear(this->render_buffer->target);
 	float time = GetTickCount64();
 	this->delta_time = time - this->prev_time;
-	// Enable text shader
+	/* Enable text shader */
 	GPU_ActivateShaderProgram(this->text_shader_id, &this->text_shader_block);
-	// Blink Cursor
+	/* Blink Cursor */
 	if (time - this->cursor_clock > this->blink_interval)
 	{
 		this->show_cursor = !this->show_cursor;
@@ -309,13 +312,13 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 			int xcur = (x * this->font_w);
 			int ycur = (y * this->font_h);
 			unsigned char c = this->buffer[y * this->console_w + x];
-			// Lower 4 bits = text color, higher 4 bits = background color
+			/* Lower 4 bits = text color, higher 4 bits = background color */
 			int text_color = this->attrib_buffer[y * this->console_w + x] & 0xF;
 			int back_color = (this->attrib_buffer[y * this->console_w + x] & 0xF0) >> 4;
-			// If its backcolor, don't draw, we already pass back color to the shader
+			/* If its backcolor, don't draw, we already pass back color to the shader */
 			if (back_color != this->default_back_color)
 			{
-				// If it is not back_color draw a block (ASCII 219) with the backcolor
+				/* If it is not back_color draw a block (ASCII 219) with the backcolor */
 				GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[back_color].returnArray());
 				GPU_Blit(this->char_blocks[219], NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
 			}
@@ -323,7 +326,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 			GPU_Blit(this->char_blocks[c], NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
 		}
 	}
-	// Draw the cursor
+	/* Draw the cursor */
 	if (this->show_cursor)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
@@ -335,26 +338,29 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 			GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.5);
 			GPU_RectangleFilled(this->render_buffer->target, this->cursor_x * this->font_w - (this->cursor_shadow_width / 2.0), this->cursor_y * this->font_h, this->cursor_x * this->font_w + (this->cursor_shadow_width / 2.0), this->cursor_y * this->font_h + this->font_h, SDL_Color{255, 255, 255, 255});
 			GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
-			/* Reduce size of cursor shadow */
+			/* Reduce size of cursor shadow with time. */
 			this->cursor_shadow_width -= (10*this->delta_time / 100.0);
 		}
 	}
 
-	// Now apply the CRT effect shader
-	// The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
+	/* 
+	Now apply the CRT effect shader 
+	The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise. 
+	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 	float resolution[2] = { (float)t->w, (float)t->h };
-	// Set shader parameters
+	/* Set shader parameters */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), time/1000.0);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
-	// Pass the back color to give the glow accent
+	/* Pass the back color to give the glow accent */
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "back_color"), 3, 1, this->color_scheme[this->default_back_color].returnArray());
-	// Pass the CRT background image to blend with
+	/* Pass the CRT background image to blend with */
 	GPU_SetShaderImage(this->crt_background, GPU_GetUniformLocation(this->crt_shader_id, "crt_background"), 1);
-	// Now blit to screen!
+	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
 
+	/* This constant is used for the burn in effect clock */
 	this->prev_time = time;
 }

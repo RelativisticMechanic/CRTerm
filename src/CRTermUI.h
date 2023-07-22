@@ -1,3 +1,16 @@
+/*
+	This is the CRTermUI class, its just a nice way to organise the various UI elements
+	that are used in this program.
+
+	The CRTermUIInstance is created by main(), this instance holds UIElement pointers,
+	if a UIElement has its show boolean set to true, then the CRTermUIInstance calls
+	the UIElements' Render() function. If not, it skips over.
+
+	Every UIElements' Render() function is just a bunch of ImGui sequences.
+
+	We got three major UIElements: ContextMenu, ConfigEditor, and ConfigSelector.
+*/
+
 #ifndef UIITEM_H
 #define UIITEM_H
 

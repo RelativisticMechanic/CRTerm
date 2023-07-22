@@ -4,8 +4,6 @@
 #include "ConfigEditor.h"
 #include "HocevarPFD.h"
 
-int selected_color = 0;
-
 void ConfigEditor::Render(void)
 {
  

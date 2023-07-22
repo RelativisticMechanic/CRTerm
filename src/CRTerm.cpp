@@ -1,6 +1,4 @@
-// CRTerm.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+/* The entry point of our glorious terminal! */
 #include <Windows.h>
 #include <dwmapi.h>
 #include <iostream>
@@ -20,23 +18,21 @@
 #include "ConfigSelector.h"
 #include "ContextMenu.h"
 
+/* SDLmain requires this. It seems to define its own main. */
 #undef main
 
 void menuCallBack(int, void*);
 
 int main()
 {
-	// Read JSON file name from default file
-	
-	// Read configuration
-
+	/* Read the path of the configuration JSON from "default" and then load it */
 	CRTermConfiguration* cfg = new CRTermConfiguration(GetDefaultConfigJSON());
 
-	// Set the screen resolution
+	/* Calculate the required screen resolution from the configuration */
 	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width);
 	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height);
 
-	// Create the screen
+	/* Create the screen */
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
 	GPU_Target* screen = GPU_Init(resolution_x, resolution_y, GPU_DEFAULT_INIT_FLAGS);
 	if (screen == NULL)
@@ -59,13 +55,13 @@ int main()
 	cfg_load->show = false;
 
 	/* Store all the allocated classes in a nice array that'll be passed to the callback */
-	void** classes = (void**)calloc(3, sizeof(void*));
-	classes[0] = (void*)vt100_term;
-	classes[1] = (void*)cfg_edit;
-	classes[2] = (void*)cfg_load;
+	void** tocallback = (void**)calloc(3, sizeof(void*));
 
-	ContextMenu* cmenu = new ContextMenu(&menuCallBack, (void*)classes);
+	tocallback[0] = (void*)vt100_term;
+	tocallback[1] = (void*)cfg_edit;
+	tocallback[2] = (void*)cfg_load;
 
+	ContextMenu* cmenu = new ContextMenu(&menuCallBack, (void*)tocallback);
 	cmenu->show = true;
 	cmenu->Add("Copy");
 	cmenu->Add("Paste");
@@ -76,8 +72,9 @@ int main()
 	UI->AddElement(cfg_load);
 	UI->AddElement(cmenu);
 
-	bool toggle_context_menu = false;
-	bool close_context_menu = false;
+	SDL_Cursor* ibeam_cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+	SDL_Cursor* normal_cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+
 	while (!done)
 	{
 		while (SDL_PollEvent(&ev))
@@ -94,21 +91,25 @@ int main()
 			/* Don't handle events if config window is on */
 			if (!cfg_edit->show && !cfg_load->show && !cmenu->menu_toggle)
 			{
-				/* Set the cursor to I beam */
-				SDL_Cursor* cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-				SDL_SetCursor(cur);
+				/* Set the cursor to I beam if normal operation of terminal. */
+				SDL_SetCursor(ibeam_cur);
 				vt100_term->VT100HandleEvent(ev);
+			}
+			else
+			{
+				/* Set the cursor to normal if a UI element is online */
+				SDL_SetCursor(normal_cur);
 			}
 		}
 		GPU_Clear(screen);
+		/* First render the terminal */
 		vt100_term->VT100Render(screen);
+		/* Then the UI */
 		UI->Render();
 		GPU_Flip(screen);
 	}
 	SDL_Quit();
-	exit(-1);
 	return 0;
-
 }
 
 void menuCallBack(int item, void* data)
@@ -118,6 +119,7 @@ void menuCallBack(int item, void* data)
 	ConfigEditor* cfg_edit_instance = (ConfigEditor*)classes[1];
 	ConfigSelector* cfg_selector_instance = (ConfigSelector*)classes[2];
 
+	/* ContextMenu preserves order in which the elements were added. */
 	switch (item)
 	{
 	case 0:
@@ -129,6 +131,7 @@ void menuCallBack(int item, void* data)
 		term_instance->VT100PasteFromClipboard();
 		break;
 	case 2:
+		/* Enable config selector */
 		cfg_selector_instance->show = true;
 		break;
 	case 3:

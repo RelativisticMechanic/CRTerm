@@ -1,3 +1,11 @@
+/*
+	This is the Console class. It is what does the fancy rendering of the terminal.
+	The Console class right now implements a bitmap font, and has an attribute buffer
+	and a character buffer. The attribute buffer holds the color information, and the
+	character the ASCII characters.
+
+	TODO: Implement true type and UTF-8 support.
+*/
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
@@ -6,8 +14,13 @@
 #include "CRTermConfig.h"
 #include "SDL_gpu.h"
 
-// Set lower 4 bits to text color
-// And higher 4 bits to background color
+/* 
+	Helper function to construct console attributes, 
+	which are basically VGA attributes that store
+	higher 4 bits as background color and lower 4 bits
+	as foreground color
+*/
+
 #define CONSTRUCT_ATTRIBUTE(fcol,bcol) (((bcol) << 4) | (fcol))
 
 class ConsoleColor
@@ -40,6 +53,7 @@ public:
 class Console
 {
 public:
+	/* TODO: Some of these are better of in private. */
 	unsigned char* buffer;
 	unsigned char* attrib_buffer;
 	int console_w, console_h;
@@ -49,7 +63,7 @@ public:
 	int cursor_x, cursor_y;
 	int console_resolution_x, console_resolution_y;
 	int default_fore_color, default_back_color;
-	int blink_interval = 0.5;
+	int blink_interval;
 	std::string bell_wave_file;
 
 	Console(CRTermConfiguration*);
@@ -68,21 +82,29 @@ public:
 	void HideCursor();
 	void PlayBell();
 	void ClearExt(int fromx, int fromy, int tox, int toy);
-	// 256 letters
+	/* The 256 letters glyphs extracted from the font image */
 	GPU_Image* char_blocks[256];
 
 private:
-	void LimitCursor();
 	ConsoleColor color_scheme[16];
 	uint32_t crt_shader_id, text_shader_id;
 	GPU_ShaderBlock crt_shader_block, text_shader_block;
+	/* 
+		Before being scaled and shaded, the pure text is rendered here,
+		it is shaded with the simple text shader that does the job of 
+		setting the appropriate colors.
+	*/
 	GPU_Image* render_buffer;
-	float cursor_clock;
 	float crt_warp;
 	float prev_time;
 	float delta_time;
 	float cursor_shadow_width;
+	/* Varable to show the clock */
+	float cursor_clock;
+	/* This boolean is toggled every blink_rate milliseconds */
 	bool show_cursor;
+
+	void LimitCursor();
 };
 
 #endif

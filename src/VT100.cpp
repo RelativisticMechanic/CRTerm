@@ -23,20 +23,24 @@ VT100::VT100(CRTermConfiguration* cfg)
 	{
 		fprintf(stderr, "Error while creating pseudoconsole.\n");
 	}
-	// Link Pipe to Listener thread
+	/* Link Pipe to Listener thread */
 	output_listener_thread = { reinterpret_cast<HANDLE>(_beginthread(outputListener, 0, this)) };
-	// Start the process
+	/* Start the process */
 	std::wstring process_name = std::wstring(cfg->shell_command.begin(), cfg->shell_command.end());
 	con->Puts("Terminal initialized.\n");
 	con->Puts("Loading shell...");
 	SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
-	// Wait
+	/* Wait for it to spawn */
 	Sleep(500);
 }
 
-// Takes an input, sets the relevant VT100 states
-// and then outputs through the console provided to
-// it on initialization.
+/* 
+This is the VT100 parser, it takes one character at a time,
+sends the terminal states and outputs non escaped characters.
+
+The thread "outputListener" (defined at the bottom) sends data
+to this from the child process' (usually a shell) pipe.
+*/
 void VT100::VT100Take(unsigned char c)
 {
 	switch (parser_state)
@@ -314,22 +318,26 @@ void VT100::VT100Take(unsigned char c)
 					else
 					{
 						int attr = argument_stack[i].value;
-						if (attr == 1) // Increased intensity
+						/* Make bright if 1 */
+						if (attr == 1)
 						{
 							this->fg |= 8;
+							/* Don't make background bright if default color, as it is blinding after the glow CRT shader LOL */
 							if(this->bg != con->default_back_color)
 								this->bg |= 8;
 						}
-						else if (attr >= 30 && attr <= 37) // Set foreground color
+						/* FG is between 30-37 */
+						else if (attr >= 30 && attr <= 37)
 						{
 							this->fg = (attr - 30) % 8;
 						}
-						else if (attr >= 40 && attr <= 47) // Set background color
+						/* BG is between 40-47 */
+						else if (attr >= 40 && attr <= 47) 
 						{
 							this->bg = (attr - 40) % 8;
 						}
 
-						// 39 and 49 set default fg and bg
+						/* 39 and 49 set default fg and bg */
 						if (attr == 39)
 						{
 							this->fg = con->default_fore_color;
@@ -454,9 +462,11 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	switch (ev.type)
 	{
 	case SDL_TEXTINPUT:
+		/* Send text input as is, SDLs text input is ASCII compliant */
 		WriteFile(this->toProgram, &(ev.text.text[0]), 1, NULL, NULL);
 		break;
 	case SDL_KEYDOWN:
+		/* Send special keys */
 		if (special_key_map.find((int)ev.key.keysym.sym) != special_key_map.end())
 		{
 			std::string ansi_sequence = special_key_map[(int)ev.key.keysym.sym];
@@ -468,7 +478,7 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 			this->CTRL_down = true;
 		}
 
-		// If CTRL is down WITH C... send break.
+		/* If CTRL is down WITH C... send break. */
 		if (this->CTRL_down)
 		{
 			if (ev.key.keysym.sym == SDLK_c)
@@ -526,9 +536,10 @@ void VT100::VT100Render(GPU_Target* t)
 	con->Render(t, 0, 0, this->font_scale);
 	GPU_DeactivateShaderProgram();
 
-	// Draw overlay above the selected text
+	/* Draw overlay above the selected text if it is selected or dragging */
 	if (is_selected || is_dragging)
 	{
+		/* In case the user has selected it from right to left, orient the selection coords */
 		orientSelectedCoords();
 		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
 		{
@@ -543,9 +554,9 @@ void VT100::VT100Render(GPU_Target* t)
 }
 void VT100::VT100Shutdown()
 {
-	// Sent exit to shell
+	/* Terminate child process */
 	TerminateProcess(cmd_process.hProcess, 0);
-	// Close handles
+	/* Close all handles */
 	ClosePseudoConsole(this->hPC);
 	CloseHandle(this->fromProgram);
 	CloseHandle(this->toProgram);
@@ -557,6 +568,7 @@ void VT100::VT100CopyToClipboard()
 	if (this->is_selected)
 	{
 		std::string result = "";
+		/* In case the user has selected it from right to left, orient the selection coords */
 		orientSelectedCoords();
 		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
 		{
@@ -572,15 +584,16 @@ void VT100::VT100CopyToClipboard()
 
 void VT100::VT100PasteFromClipboard()
 {
-	// Paste from clipboard also escape the string
+	/* Take data from clipboard also escape the string as per ANSI */
 	std::string clipboard = "\x1B[200~" + GetFromClipboard() + "\x1B[201~";
-	// Send to program!
+	/* Send to pipe! */
 	WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
 }
 
-// Functions that listens to the program output.
+/* This function is run on a separate thread that listens to the terminal output and sends them byte by byte */
 void __cdecl outputListener(LPVOID term)
 {
+	/* TODO: Don't use a fixed buffer maybe? */
 	const DWORD BUFF_SIZE { 8192 };
 	char szBuffer[BUFF_SIZE]{};
 	DWORD dwBytesWritten{};
@@ -589,9 +602,9 @@ void __cdecl outputListener(LPVOID term)
 	VT100* vt100_term = (VT100*)term;
 	do
 	{
-		// Read from the pipe
+		/* Read from the pipe */
 		fRead = ReadFile(vt100_term->fromProgram, szBuffer, BUFF_SIZE, &dwBytesRead, NULL);
-		// Write received text to the Console
+		/* Send it to VT100 parser */
 		for (int i = 0; i < dwBytesRead; i++)
 		{
 			vt100_term->VT100Take(szBuffer[i]);

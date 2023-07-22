@@ -2,6 +2,14 @@
 #define CONFIG_LOADER_H
 
 #include "CRTermUI.h"
+/*
+	Allows the user to select a JSON configuration from the JSON files
+	in config/.
+
+	It just reads the config directory then overwrites the "default" file
+	with the path of whatever the user selected. 
+*/
+
 #include "CRTermConfig.h"
 #include <vector>
 #include <fstream>
