@@ -20,7 +20,8 @@ typedef enum
 	VTSTATE_PRIVATE, // 4
 	VTSTATE_ATTR, // 5
 	VTSTATE_ENDVAL,
-	VTSTATE_PRIVATE_ENDVAL
+	VTSTATE_PRIVATE_ENDVAL,
+	VTSTATE_IGNORE_NEXT
 } VT100ParseState;
 
 typedef struct
@@ -80,6 +81,8 @@ public:
 	void VT100HandleEvent(SDL_Event);
 	void VT100Shutdown();
 	void VT100Render(GPU_Target*);
+	void VT100CopyToClipboard();
+	void VT100PasteFromClipboard();
 
 	inline void screenToConsoleCoords(int screenx, int screeny, int* conx, int* cony)
 	{

@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\sdl_gpu">
+      <UniqueIdentifier>{c3c5a65f-8d8f-4c31-b0d7-86c3602768ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sdl2">
+      <UniqueIdentifier>{240ad286-5598-42e3-97d8-819b15188592}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{9ca9c044-9594-4f39-a35e-ccc6d47585a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgui">
+      <UniqueIdentifier>{0e9d4221-32ab-406a-8ec4-006518f7fac8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRTerm.cpp">
@@ -36,6 +48,39 @@
     <ClCompile Include="Win32ClipBoard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_impl_sdl2.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_tables.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="CRTermUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\imgui\imgui_stdlib.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ContextMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders.h">
@@ -57,6 +102,318 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Win32ClipBoard.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_1.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_1_BASE.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_2.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_3.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_4.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_RendererImpl.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_version.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_1.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_2.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_3.h">
+      <Filter>Header Files\sdl_gpu</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\close_code.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_assert.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_atomic.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_audio.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_bits.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_blendmode.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_clipboard.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_config.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_cpuinfo.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_egl.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_endian.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_error.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_events.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_filesystem.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_gamecontroller.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_gesture.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_guid.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_haptic.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_hidapi.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_hints.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_joystick.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_keyboard.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_keycode.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_loadso.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_locale.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_log.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_main.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_messagebox.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_metal.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_misc.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_mouse.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_mutex.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_name.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengl.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengl_glext.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2ext.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2platform.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_khrplatform.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_pixels.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_platform.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_power.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_quit.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_rect.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_render.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_revision.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_rwops.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_scancode.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_sensor.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_shape.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_stdinc.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_surface.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_system.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_syswm.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_assert.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_common.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_compare.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_crc32.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_font.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_fuzzer.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_harness.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_images.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_log.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_md5.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_memory.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_test_random.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_thread.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_timer.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_touch.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_types.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_version.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_video.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\SDL_vulkan.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2\include\begin_code.h">
+      <Filter>Header Files\sdl2</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui_impl_opengl3.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui_impl_opengl3_loader.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui_impl_sdl2.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui_internal.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imstb_rectpack.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imstb_textedit.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imstb_truetype.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imconfig.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="CRTermUI.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigEditor.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\imgui\include\imgui_stdlib.h">
+      <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="HocevarPFD.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigSelector.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ContextMenu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

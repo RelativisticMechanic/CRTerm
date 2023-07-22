@@ -1,6 +1,7 @@
 #ifndef CRTERM_CONFIG_H
 #define CRTERM_CONFIG_H
 
+#include <iostream>
 #include <string>
 #include "NlohmannJSON.h"
 
@@ -31,7 +32,16 @@ public:
 	float crt_warp;
 	CRTermColor color_scheme[16];
 
+	CRTermConfiguration()
+	{
+
+	};
+
 	CRTermConfiguration(std::string json_path);
+	void Save(std::string filename);
 };
+
+/* Read the "default" file which contains the path to the default JSON location */
+std::string GetDefaultConfigJSON();
 
 #endif

@@ -108,12 +108,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\winga\OneDrive\Desktop\repos\CRTerm\lib\SDL2_gpu\include;C:\Users\winga\OneDrive\Desktop\repos\CRTerm\lib\SDL2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)lib\imgui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_gpu.lib;SDL2_gpu_s.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_gpu.lib;SDL2_gpu_s.lib;winmm.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2;$(ProjectDir)lib\SDL2_gpu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -134,18 +135,133 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConfigEditor.cpp" />
+    <ClCompile Include="ConfigSelector.cpp" />
+    <ClCompile Include="ContextMenu.cpp" />
+    <ClCompile Include="CRTermUI.cpp" />
     <ClCompile Include="CRTermConfig.cpp" />
     <ClCompile Include="ConPTY.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="CRTerm.cpp" />
+    <ClCompile Include="lib\imgui\imgui.cpp" />
+    <ClCompile Include="lib\imgui\imgui_draw.cpp" />
+    <ClCompile Include="lib\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="lib\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="lib\imgui\imgui_stdlib.cpp" />
+    <ClCompile Include="lib\imgui\imgui_tables.cpp" />
+    <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="VT100.cpp" />
     <ClCompile Include="Win32ClipBoard.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConfigEditor.h" />
+    <ClInclude Include="ConfigSelector.h" />
+    <ClInclude Include="ContextMenu.h" />
+    <ClInclude Include="CRTermUI.h" />
     <ClInclude Include="ConPTY.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="CRTermConfig.h" />
+    <ClInclude Include="HocevarPFD.h" />
+    <ClInclude Include="lib\imgui\include\imconfig.h" />
+    <ClInclude Include="lib\imgui\include\imgui.h" />
+    <ClInclude Include="lib\imgui\include\imgui_impl_opengl3.h" />
+    <ClInclude Include="lib\imgui\include\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="lib\imgui\include\imgui_impl_sdl2.h" />
+    <ClInclude Include="lib\imgui\include\imgui_internal.h" />
+    <ClInclude Include="lib\imgui\include\imgui_stdlib.h" />
+    <ClInclude Include="lib\imgui\include\imstb_rectpack.h" />
+    <ClInclude Include="lib\imgui\include\imstb_textedit.h" />
+    <ClInclude Include="lib\imgui\include\imstb_truetype.h" />
+    <ClInclude Include="lib\SDL2\include\begin_code.h" />
+    <ClInclude Include="lib\SDL2\include\close_code.h" />
+    <ClInclude Include="lib\SDL2\include\SDL.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_assert.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_atomic.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_audio.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_bits.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_blendmode.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_clipboard.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_config.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_cpuinfo.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_egl.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_endian.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_error.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_events.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_filesystem.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_gamecontroller.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_gesture.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_guid.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_haptic.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_hidapi.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_hints.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_joystick.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_keyboard.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_keycode.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_loadso.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_locale.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_log.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_main.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_messagebox.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_metal.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_misc.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_mouse.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_mutex.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_name.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengl.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2ext.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_gl2platform.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_opengl_glext.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_pixels.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_platform.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_power.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_quit.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_rect.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_render.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_revision.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_rwops.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_scancode.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_sensor.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_shape.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_stdinc.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_surface.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_system.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_syswm.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_assert.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_common.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_compare.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_crc32.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_font.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_fuzzer.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_harness.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_images.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_log.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_md5.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_memory.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_test_random.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_thread.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_timer.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_touch.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_types.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_version.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_video.h" />
+    <ClInclude Include="lib\SDL2\include\SDL_vulkan.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_1.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_2.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_GLES_3.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_1.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_1_BASE.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_2.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_3.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_OpenGL_4.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_RendererImpl.h" />
+    <ClInclude Include="lib\SDL2_gpu\include\SDL_gpu_version.h" />
     <ClInclude Include="NlohmannJSON.h" />
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="VT100.h" />

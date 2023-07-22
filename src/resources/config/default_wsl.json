@@ -1,0 +1,37 @@
+{
+    "font": "font.png",
+    "font_width": 16,
+    "font_height": 32,
+    "font_scale": 0.8,
+    "console_width": 120,
+    "console_height": 30,
+    "background": "crt.png",
+    "text_shader": "shaders/text",
+    "crt_shader": "shaders/crt",
+    "bell": "bell.wav",
+    "crt_warp": 0.0,
+    "shell_command": "wsl.exe ~",
+    "blink_interval": 300,
+    "default_fg": 6,
+    "default_bg": 6,
+
+    "color_scheme":
+    [
+        [10, 10, 10],
+        [0, 0, 170], 
+        [0, 170, 0],
+        [0, 170, 170],
+        [170, 0, 0],
+        [170, 0, 170],
+        [170, 128, 0],
+        [170, 170, 170],
+        [85, 85, 85],
+        [85, 85, 255],
+        [85, 255, 85],
+        [85, 255, 255],
+        [255, 85, 85],
+        [255, 85, 255],
+        [255, 255, 0],
+        [255, 255, 255] 
+    ]
+}

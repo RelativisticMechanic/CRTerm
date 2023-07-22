@@ -3,6 +3,28 @@
 #include <fstream>
 #include "CRTermConfig.h"
 
+std::string GetDefaultConfigJSON()
+{
+	FILE* fp;
+	fopen_s(&fp, "default", "r");
+	if (!fp)
+		return "";
+
+	fseek(fp, 0, SEEK_END);
+	int size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	char* s = (char*)calloc(size + 1, sizeof(char));
+
+	if (!s)
+		return "";
+
+	fread(s, sizeof(char), size, fp);
+
+	fclose(fp);
+	std::string json_file_name = std::string(s);
+	return json_file_name;
+}
+
 CRTermConfiguration::CRTermConfiguration(std::string json_path)
 {
 	nlohmann::json configuration_data;
@@ -49,4 +71,42 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 	{
 		MessageBox(GetActiveWindow(), L"An exception occurred while loading default.json", L"Error loading default.json", MB_OK | MB_ICONERROR);
 	}
+}
+
+void CRTermConfiguration::Save(std::string filename)
+{
+	nlohmann::json output_json;
+
+	output_json["font_height"] = this->font_height;
+	output_json["font_width"] = this->font_width;
+	output_json["font_scale"] = this->font_scale;
+	output_json["font"] = this->bitmap_font_file;
+	output_json["console_width"] = this->console_width;
+	output_json["console_height"] = this->console_height;
+	output_json["background"] = this->crt_background_image;
+	output_json["text_shader"] = this->shader_path_text;
+	output_json["crt_shader"] = this->shader_path_crt;
+
+	output_json["crt_shader"] = this->shader_path_crt;
+	output_json["bell"] = this->bell_sound;
+	output_json["shell_command"] = this->shell_command;
+	output_json["blink_interval"] = this->blink_interval;
+	output_json["default_fg"] = this->default_fore_color;
+	output_json["default_bg"] = this->default_back_color;
+	output_json["crt_warp"] = this->crt_warp;
+
+	int color_scheme_arr[16][3];
+
+	for (int i = 0; i < 16; i++)
+	{
+		color_scheme_arr[i][0] = color_scheme[i].r;
+		color_scheme_arr[i][1] = color_scheme[i].g;
+		color_scheme_arr[i][2] = color_scheme[i].b;
+	}
+
+	output_json["color_sheme"] = color_scheme_arr;
+
+	std::ofstream output(filename);
+	output << std::setw(4) << output_json;
+	output.close();
 }

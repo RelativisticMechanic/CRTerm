@@ -1,9 +1,13 @@
-#include "Console.h"
-#include "Shaders.h"
+
 #include <Windows.h>
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
+
+#include "Console.h"
+#include "Shaders.h"
+
 
 Console::Console(CRTermConfiguration* cfg)
 {
@@ -68,6 +72,7 @@ Console::Console(CRTermConfiguration* cfg)
 	// Cursor clock for blinking
 	this->blink_interval = cfg->blink_interval;
 	this->cursor_clock = GetTickCount64();
+	this->prev_time = GetTickCount64();
 	this->show_cursor = true;
 
 	// Load the color scheme
@@ -113,10 +118,14 @@ void Console::ClearExt(int fromx, int fromy, int tox, int toy)
 	}
 
 	if (fromx > tox)
-		return;
+	{
+		std::swap(fromx, tox);
+	}
 
 	if (fromy > toy)
-		return;
+	{
+		std::swap(fromy, toy);
+	}
 
 	for (int i = fromx + fromy * this->console_w; i < tox + toy * this->console_w; i++)
 	{
@@ -146,7 +155,6 @@ void Console::LimitCursor()
 	}
 }
 
-
 void Console::Scroll()
 {
 	// Scroll up by 1 line
@@ -155,6 +163,8 @@ void Console::Scroll()
 	// Empty last line
 	memset((void*)((uintptr_t)this->buffer + sizeof(char) * (this->console_h - 1) * this->console_w), ' ', this->console_w);
 	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(char) * (this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
+	this->cursor_y -= 1;
+	this->cursor_x = 0;
 }
 
 void Console::SetCursor(int x, int y)
@@ -189,11 +199,6 @@ void Console::PutChar(unsigned char c)
 void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 {
 	uint8_t chr = (uint8_t)c;
-	if (this->cursor_x >= this->console_w)
-	{
-		this->cursor_x = 0;
-		this->cursor_y += 1;
-	}
 	if (c == '\n')
 	{
 		this->cursor_y += 1;
@@ -230,17 +235,21 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 	else
 	{
 		this->PlaceChar(this->cursor_x, this->cursor_y, chr, fore_color, back_color);
+		/* Add cursor shadow */
+		this->cursor_shadow_width = this->font_w * 2;
 		this->cursor_x += 1;
-		if (this->cursor_x >= this->console_w)
-		{
-			this->cursor_x = 0;
-			this->cursor_y += 1;
-		}
+	}
+
+	if (this->cursor_x >= this->console_w && this->cursor_y < this->console_h - 1)
+	{
+		this->cursor_x = 0;
+		this->cursor_y += 1;
 	}
 
 	if (this->cursor_y >= this->console_h)
 	{
-		this->Scroll();
+		while(!(this->cursor_y < this->console_h))
+			this->Scroll();
 	}
 
 	this->LimitCursor();
@@ -265,11 +274,13 @@ void Console::Puts(std::string s)
 void Console::ShowCursor()
 {
 	this->show_cursor = true;
+	this->cursor_clock = 0;
 }
 
 void Console::HideCursor()
 {
 	this->show_cursor = false;
+	this->cursor_clock = 0;
 }
 
 unsigned char Console::ReadChar(int x, int y)
@@ -282,6 +293,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
 	float time = GetTickCount64();
+	this->delta_time = time - this->prev_time;
 	// Enable text shader
 	GPU_ActivateShaderProgram(this->text_shader_id, &this->text_shader_block);
 	// Blink Cursor
@@ -316,6 +328,16 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
 		GPU_Blit(this->char_blocks[219], NULL, this->render_buffer->target, this->cursor_x * this->font_w + font_w / 2, this->cursor_y * this->font_h + font_h / 2);
+
+		/* Draw cursor shadow */
+		if (this->cursor_shadow_width > 0.0)
+		{
+			GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.5);
+			GPU_RectangleFilled(this->render_buffer->target, this->cursor_x * this->font_w - (this->cursor_shadow_width / 2.0), this->cursor_y * this->font_h, this->cursor_x * this->font_w + (this->cursor_shadow_width / 2.0), this->cursor_y * this->font_h + this->font_h, SDL_Color{255, 255, 255, 255});
+			GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
+			/* Reduce size of cursor shadow */
+			this->cursor_shadow_width -= (10*this->delta_time / 100.0);
+		}
 	}
 
 	// Now apply the CRT effect shader
@@ -333,4 +355,6 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	// Now blit to screen!
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
+
+	this->prev_time = time;
 }

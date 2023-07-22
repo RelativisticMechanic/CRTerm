@@ -79,6 +79,9 @@ private:
 	GPU_Image* render_buffer;
 	float cursor_clock;
 	float crt_warp;
+	float prev_time;
+	float delta_time;
+	float cursor_shadow_width;
 	bool show_cursor;
 };
 

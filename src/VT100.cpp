@@ -9,13 +9,13 @@ void __cdecl outputListener(LPVOID term);
 
 VT100::VT100(CRTermConfiguration* cfg)
 {
-	this->con = new Console(cfg);
+	con = new Console(cfg);
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
 	this->CTRL_down = false;
 	this->is_selected = false;
 	this->parser_state = VTSTATE_NORMAL;
-	this->console_window = GetActiveWindow();
+	console_window = GetActiveWindow();
 
 	this->font_scale = cfg->font_scale;
 	HRESULT hr = CreatePseudoConsoleAndPipes(&hPC, &fromProgram, &toProgram, con->console_w, con->console_h);
@@ -28,10 +28,10 @@ VT100::VT100(CRTermConfiguration* cfg)
 	// Start the process
 	std::wstring process_name = std::wstring(cfg->shell_command.begin(), cfg->shell_command.end());
 	con->Puts("Terminal initialized.\n");
-	con->Puts("Loading shell...\n");
+	con->Puts("Loading shell...");
 	SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
 	// Wait
-	Sleep(200);
+	Sleep(500);
 }
 
 // Takes an input, sets the relevant VT100 states
@@ -41,6 +41,9 @@ void VT100::VT100Take(unsigned char c)
 {
 	switch (parser_state)
 	{
+	case VTSTATE_IGNORE_NEXT:
+		parser_state = VTSTATE_NORMAL;
+		break;
 	case VTSTATE_NORMAL:
 		if (c == '\x1B')
 		{
@@ -68,11 +71,12 @@ void VT100::VT100Take(unsigned char c)
 			control_string_idx = 0;
 			for (int i = 0; i < VT100_STRING_SIZE; i++)
 			{
-				this->control_strings[i] = "";
+				control_strings[i] = "";
 			}
 		}
 		else
 		{
+			std::cout << "Unexpected identifier after VT_ESCAPE: " << c << std::endl;
 			parser_state = VTSTATE_NORMAL;
 			VT100Putc(c);
 		}
@@ -121,9 +125,9 @@ void VT100::VT100Take(unsigned char c)
 		{
 			parser_state = VTSTATE_NORMAL;
 			// Set the window title to 0 string
-			std::string window_title = "CRTerm.exe - " + this->control_strings[0];
+			std::string window_title = "CRTerm.exe - " + control_strings[0];
 			std::wstring window_title_wide = std::wstring(window_title.begin(), window_title.end());
-			SetWindowText(this->console_window, (LPCWSTR)window_title_wide.c_str());
+			SetWindowText(console_window, (LPCWSTR)window_title_wide.c_str());
 		}
 		else
 		{
@@ -221,34 +225,31 @@ void VT100::VT100Take(unsigned char c)
 					con->SetCursor(argument_stack[0].value - 1, con->cursor_y);
 				}
 				break;
-			case 'd':
-				/* Cursor left P1 columns */
-				break;
 			case 'H':
 			case 'f':
 				/* Move cursor to row n, column m, 1-indexed */
 				if (stack_ptr == 1 && argument_stack[stack_ptr].empty)
 				{
-					this->con->SetCursor(0, 0);
+					con->SetCursor(0, 0);
 				}
 				else if (stack_ptr == 2)
 				{
 					if (argument_stack[0].empty)
 					{
-						this->con->SetCursorY(0);
+						con->SetCursorY(0);
 					}
 					else
 					{
-						this->con->SetCursorY(argument_stack[0].value - 1);
+						con->SetCursorY(argument_stack[0].value - 1);
 					}
 
 					if (argument_stack[1].empty)
 					{
-						this->con->SetCursorX(0);
+						con->SetCursorX(0);
 					}
 					else
 					{
-						this->con->SetCursorX(argument_stack[1].value - 1);
+						con->SetCursorX(argument_stack[1].value - 1);
 					}
 				}
 				break;
@@ -256,7 +257,7 @@ void VT100::VT100Take(unsigned char c)
 				/* Clear part of the screen */
 				if (argument_stack[0].empty)
 				{
-					this->con->ClearExt(con->cursor_x, con->cursor_y, con->console_w, con->console_h - 1);
+					con->ClearExt(con->cursor_x, con->cursor_y, con->console_w - 1, con->console_h - 1);
 				}
 				else
 				{
@@ -264,13 +265,13 @@ void VT100::VT100Take(unsigned char c)
 					switch (attr)
 					{
 					case 0:
-						this->con->ClearExt(con->cursor_x, con->cursor_y, con->console_w, con->console_h - 1);
+						con->ClearExt(con->cursor_x, con->cursor_y, con->console_w - 1, con->console_h - 1);
 						break;
 					case 1:
-						this->con->ClearExt(0, 0, con->cursor_x, con->cursor_x);
+						con->ClearExt(0, 0, con->cursor_x, con->cursor_y);
 						break;
 					case 2:
-						this->con->ClearExt(0, 0, con->console_w - 1, con->console_h - 1);
+						con->ClearExt(0, 0, con->console_w - 1, con->console_h - 1);
 						break;
 					default:
 						break;
@@ -316,6 +317,8 @@ void VT100::VT100Take(unsigned char c)
 						if (attr == 1) // Increased intensity
 						{
 							this->fg |= 8;
+							if(this->bg != con->default_back_color)
+								this->bg |= 8;
 						}
 						else if (attr >= 30 && attr <= 37) // Set foreground color
 						{
@@ -329,14 +332,46 @@ void VT100::VT100Take(unsigned char c)
 						// 39 and 49 set default fg and bg
 						if (attr == 39)
 						{
-							this->fg = this->con->default_fore_color;
+							this->fg = con->default_fore_color;
 						}
 
-						if (attr == 49)
+						else if (attr == 49)
 						{
-							this->bg = this->con->default_back_color;
+							this->bg = con->default_back_color;
 						}
 
+						else if (attr == 38)
+						{
+							if (i < VT100_ARG_STACK_SIZE - 1)
+							{
+								i += 1;
+								if (argument_stack[i].value == 5)
+								{
+									/* ISO 8613-3 CSI 38;5;Ps - Set FG to PS */
+									if (i < VT100_ARG_STACK_SIZE - 1)
+									{
+										i += 1;
+										this->fg = argument_stack[i].value;
+									}
+								}
+							}
+						}
+						else if (attr == 48)
+						{
+							if (i < VT100_ARG_STACK_SIZE - 1)
+							{
+								i += 1;
+								if (argument_stack[i].value == 5)
+								{
+									/* ISO 8613-3 CSI 48;5;Ps - Set BG to PS */
+									if (i < VT100_ARG_STACK_SIZE - 1)
+									{
+										i += 1;
+										this->bg = argument_stack[i].value;
+									}
+								}
+							}
+						}
 					}
 				}
 				break;
@@ -362,9 +397,29 @@ void VT100::VT100Take(unsigned char c)
 					}
 				}
 				break;
-
+			case 'X':
+				/* Erase n chars to the right */
+				if (argument_stack[0].empty)
+				{
+					con->PlaceChar(con->cursor_x + 1, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
+				}
+				else
+				{
+					for (int i = 0; i < this->argument_stack[0].value; i++)
+					{
+						con->PlaceChar(con->cursor_x + i, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
+					}
+				}
+				break;
+			case '%':
+				parser_state = VTSTATE_IGNORE_NEXT;
+				break;
+			default:
+				std::cout << "Unimplemented sequence: " << c << std::endl;
+				break;
 			}
-			parser_state = VTSTATE_NORMAL;
+			if(parser_state != VTSTATE_IGNORE_NEXT)
+				parser_state = VTSTATE_NORMAL;
 		}
 	}
 
@@ -374,20 +429,24 @@ void VT100::VT100Take(unsigned char c)
 		{
 		case 'h':
 			/* Show cursor */
-			this->con->ShowCursor();
+			con->ShowCursor();
 			break;
 		case 'l':
 			/* Hide cursor */
-			this->con->HideCursor();
+			con->HideCursor();
+			break;
+		case '$':
+			parser_state = VTSTATE_IGNORE_NEXT;
 			break;
 		}
-		parser_state = VTSTATE_NORMAL;
+		if (parser_state != VTSTATE_IGNORE_NEXT)
+			parser_state = VTSTATE_NORMAL;
 	}
 }
 
 void VT100::VT100Putc(unsigned char c)
 {
-	this->con->PutCharExt(c, this->fg, this->bg);
+	con->PutCharExt(c, this->fg, this->bg);
 }
 
 void VT100::VT100HandleEvent(SDL_Event ev)
@@ -453,31 +512,6 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 			}
 			this->is_dragging = false;
 		}
-		else if (ev.button.button == SDL_BUTTON_RIGHT)
-		{
-			/* If selected and user presses right click, copy to clipboard */
-			if (this->is_selected)
-			{
-				std::string result = "";
-				orientSelectedCoords();
-				for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
-				{
-					for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
-					{
-						result += this->con->ReadChar(x, y);
-					}
-				}
-				CopyToClipboard(result);
-				this->is_selected = false;
-			}
-			else
-			{
-				// Paste from clipboard also escape the string
-				std::string clipboard = "\x1B[200~" + GetFromClipboard() + "\x1B[201~";
-				// Send to program!
-				WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
-			}
-		}
 		break;
 	case SDL_QUIT:
 		VT100Shutdown();
@@ -489,8 +523,9 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 
 void VT100::VT100Render(GPU_Target* t)
 {
-	this->con->Render(t, 0, 0, this->font_scale);
+	con->Render(t, 0, 0, this->font_scale);
 	GPU_DeactivateShaderProgram();
+
 	// Draw overlay above the selected text
 	if (is_selected || is_dragging)
 	{
@@ -501,7 +536,7 @@ void VT100::VT100Render(GPU_Target* t)
 			{
 				int sx, sy;
 				consoleToScreenCoords(x, y, &sx, &sy);
-				GPU_RectangleFilled(t, sx, sy, sx + this->con->font_w * this->font_scale, sy + this->con->font_h * this->font_scale, SDL_Color{255, 255, 255, 192});
+				GPU_RectangleFilled(t, sx, sy, sx + con->font_w * this->font_scale, sy + con->font_h * this->font_scale, SDL_Color{255, 255, 255, 128});
 			}
 		}
 	}
@@ -515,6 +550,34 @@ void VT100::VT100Shutdown()
 	CloseHandle(this->fromProgram);
 	CloseHandle(this->toProgram);
 }
+
+void VT100::VT100CopyToClipboard()
+{
+	/* If selected and user presses right click, copy to clipboard */
+	if (this->is_selected)
+	{
+		std::string result = "";
+		orientSelectedCoords();
+		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
+		{
+			for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
+			{
+				result += con->ReadChar(x, y);
+			}
+		}
+		CopyToClipboard(result);
+		this->is_selected = false;
+	}
+}
+
+void VT100::VT100PasteFromClipboard()
+{
+	// Paste from clipboard also escape the string
+	std::string clipboard = "\x1B[200~" + GetFromClipboard() + "\x1B[201~";
+	// Send to program!
+	WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
+}
+
 // Functions that listens to the program output.
 void __cdecl outputListener(LPVOID term)
 {
@@ -531,10 +594,9 @@ void __cdecl outputListener(LPVOID term)
 		// Write received text to the Console
 		for (int i = 0; i < dwBytesRead; i++)
 		{
-			if (szBuffer[i] == '\0')
-				break;
 			vt100_term->VT100Take(szBuffer[i]);
 		}
 
 	} while (fRead && dwBytesRead >= 0);
 }
+
