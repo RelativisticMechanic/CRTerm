@@ -15,9 +15,9 @@ uniform float time;
 uniform vec2 resolution;
 
 // Glow effect settings
-const float blurSize = 1.0/512.0;
-const float intensity = 1.2;
-const float speed = 20.0;
+const float blurSize = 1.5/512.0;
+const float intensity = 1.4;
+const float speed = 10.0;
 
 // Theme settings
 uniform vec3 back_color;

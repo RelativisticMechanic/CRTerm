@@ -7,7 +7,7 @@ SDL_HitTestResult HitTestCallback(SDL_Window* Window, const SDL_Point* Area, voi
     SDL_GetWindowSize(Window, &Width, &Height);
 
     /* If the cursor is in the title bar region, we are dragable. */
-    if (Area->y < TITLE_BAR_HEIGHT && Area->x < (Width - TITLE_BAR_ICON_SIZE * 2))
+    if (Area->y < TITLE_BAR_HEIGHT && Area->x < (Width - TITLE_BAR_ICON_SIZE * 3))
     {
         return SDL_HITTEST_DRAGGABLE;
     }
@@ -46,21 +46,35 @@ void CustomTitleBar::Render()
     ImGui::PopStyleColor();
     ImGui::End();
 
-    ImGui::SetNextWindowPos(ImVec2(this->resolution_x - TITLE_BAR_ICON_SIZE * 2, 0));
-    ImGui::SetNextWindowSize(ImVec2(TITLE_BAR_ICON_SIZE * 2, TITLE_BAR_HEIGHT));
-    ImGui::Begin("##XButton", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
+    ImGui::SetNextWindowPos(ImVec2(this->resolution_x - TITLE_BAR_ICON_SIZE * 3, 0));
+    ImGui::SetNextWindowSize(ImVec2(TITLE_BAR_ICON_SIZE * 3, TITLE_BAR_HEIGHT));
+    ImGui::Begin("##Window_Buttons", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
-    if (ImGui::Button("_"))
+    
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(128, 128, 0, 255));
+    if (ImGui::Button(" _ "))
     {
         SDL_MinimizeWindow(this->window);
     }
+    ImGui::PopStyleColor();
+
     ImGui::SameLine();
-    if (ImGui::Button("X"))
+
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 128, 0, 255));
+    ImGui::Button(" = ");
+    ImGui::PopStyleColor();
+
+    ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(128, 0, 0, 255));
+    if (ImGui::Button(" \xC3\x97 "))
     {
         SDL_Event ev;
         ev.type = SDL_QUIT;
         SDL_PushEvent(&ev);
     }
+    ImGui::PopStyleColor();
+
     ImGui::PopStyleColor();
     ImGui::End();
 }

@@ -95,7 +95,7 @@ static inline void SetUpImGuiTheme()
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.2000000029802322f, 0.2000000029802322f, 0.2000000029802322f, 0.3499999940395355f);
 	
 	ImGuiIO& io = ImGui::GetIO();
-	io.Fonts->AddFontFromFileTTF("ui/DroidSans.ttf", 13);
+	io.Fonts->AddFontFromFileTTF("ui/DroidSans.ttf", 16);
 }
 
 #endif

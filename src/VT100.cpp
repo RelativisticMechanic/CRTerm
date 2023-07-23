@@ -1,6 +1,7 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
+#include "CRTerm.h"
 #include "VT100.h"
 #include "ConPTY.h"
 #include "Win32ClipBoard.h"
@@ -29,9 +30,16 @@ VT100::VT100(CRTermConfiguration* cfg, GPU_Target* render_target)
 	output_listener_thread = { reinterpret_cast<HANDLE>(_beginthread(outputListener, 0, this)) };
 	/* Start the process */
 	std::wstring process_name = std::wstring(cfg->shell_command.begin(), cfg->shell_command.end());
+	con->Puts(CRTERM_VERSION_STRING);
+	con->Puts("\n");
+	con->Puts(CRTERM_CREDIT_STRING);
 	con->Puts("Terminal initialized.\n");
 	con->Puts("Loading shell...");
-	SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
+	HRESULT ok = SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
+	if (ok != S_OK)
+	{
+		con->Puts("Failed to initialize provided shell application.\n");
+	}
 	/* Wait for it to spawn */
 	Sleep(500);
 }
@@ -131,9 +139,7 @@ void VT100::VT100Take(unsigned char c)
 		{
 			parser_state = VTSTATE_NORMAL;
 			// Set the window title to 0 string
-			std::string window_title = "CRTerm.exe - " + control_strings[0];
-			std::wstring window_title_wide = std::wstring(window_title.begin(), window_title.end());
-			SetWindowText(console_window, (LPCWSTR)window_title_wide.c_str());
+			std::string window_title = "CRTerm - " + control_strings[0];
 			SDL_SetWindowTitle(this->sdl_window, window_title.c_str());
 		}
 		else
@@ -457,11 +463,11 @@ void VT100::VT100Take(unsigned char c)
 				con->HideCursor();
 			}
 			/* CST ? 2004 h Turn OFF bracketed paste */
-			if (this->argument_stack[0].value == 2004)
-			{
-				this->bracketed_mode = false;
-			}
-			break;
+if (this->argument_stack[0].value == 2004)
+{
+	this->bracketed_mode = false;
+}
+break;
 		case '$':
 			/* CSI ? ARGS $p - Unimplemented */
 			parser_state = VTSTATE_IGNORE_NEXT;
@@ -642,6 +648,18 @@ void __cdecl outputListener(LPVOID term)
 	VT100* vt100_term = (VT100*)term;
 	do
 	{
+		/* Check if process is still active */
+		DWORD exitcode;
+		if (GetExitCodeProcess(vt100_term->cmd_process.hProcess, &exitcode))
+		{
+			if (exitcode != STILL_ACTIVE)
+			{
+				vt100_term->con->Puts("Process exited with exit code: " + std::to_string((int)exitcode) + std::string("\n"));
+				vt100_term->con->Puts("You may exit the terminal.");
+				break;
+			}
+		}
+
 		/* Read from the pipe */
 		fRead = ReadFile(vt100_term->fromProgram, szBuffer, BUFF_SIZE, &dwBytesRead, NULL);
 		/* Send it to VT100 parser */

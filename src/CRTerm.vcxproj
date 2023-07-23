@@ -156,6 +156,7 @@
     <ClCompile Include="Win32ClipBoard.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CRTerm.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="UITheme.h" />
     <ClInclude Include="ConfigEditor.h" />

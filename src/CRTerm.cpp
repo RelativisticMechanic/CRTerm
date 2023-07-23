@@ -43,7 +43,6 @@ int main()
 		return 1;
 	}
 
-	SetWindowText(GetActiveWindow(), L"CRTerm.exe starting...");
 	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
 
 	SDL_Event ev;
