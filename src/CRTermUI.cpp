@@ -1,4 +1,5 @@
 #include "CRTermUI.h"
+#include "UITheme.h"
 
 CRTermUIInstance::CRTermUIInstance(GPU_Target* screen)
 {
@@ -10,7 +11,7 @@ CRTermUIInstance::CRTermUIInstance(GPU_Target* screen)
 	const char* glsl_version = "#version 330";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	// Setup style
-	ImGui::StyleColorsClassic();
+	SetUpImGuiTheme();
 }
 
 void CRTermUIInstance::AddElement(UIElement* e)

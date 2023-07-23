@@ -295,7 +295,7 @@ unsigned char Console::ReadChar(int x, int y)
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
-	float time = GetTickCount64();
+	uint64_t time = GetTickCount64();
 	this->delta_time = time - this->prev_time;
 	/* Enable text shader */
 	GPU_ActivateShaderProgram(this->text_shader_id, &this->text_shader_block);
@@ -351,7 +351,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	float resolution[2] = { (float)t->w, (float)t->h };
 	/* Set shader parameters */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
-	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), time/1000.0);
+	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), (float)time/1000.0);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
 	/* Pass the back color to give the glow accent */
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "back_color"), 3, 1, this->color_scheme[this->default_back_color].returnArray());

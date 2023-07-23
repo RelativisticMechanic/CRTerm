@@ -7,17 +7,18 @@
 
 void __cdecl outputListener(LPVOID term);
 
-VT100::VT100(CRTermConfiguration* cfg)
+VT100::VT100(CRTermConfiguration* cfg, GPU_Target* render_target)
 {
 	con = new Console(cfg);
+	this->render_target = render_target;
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
 	this->bracketed_mode = true;
 	this->CTRL_down = false;
 	this->is_selected = false;
 	this->parser_state = VTSTATE_NORMAL;
-	console_window = GetActiveWindow();
-
+	this->console_window = GetActiveWindow();
+	this->sdl_window = SDL_GetWindowFromID(render_target->context->windowID);
 	this->font_scale = cfg->font_scale;
 	HRESULT hr = CreatePseudoConsoleAndPipes(&hPC, &fromProgram, &toProgram, con->console_w, con->console_h);
 	if (hr != S_OK)
@@ -133,6 +134,7 @@ void VT100::VT100Take(unsigned char c)
 			std::string window_title = "CRTerm.exe - " + control_strings[0];
 			std::wstring window_title_wide = std::wstring(window_title.begin(), window_title.end());
 			SetWindowText(console_window, (LPCWSTR)window_title_wide.c_str());
+			SDL_SetWindowTitle(this->sdl_window, window_title.c_str());
 		}
 		else
 		{
@@ -549,9 +551,9 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	}
 }
 
-void VT100::VT100Render(GPU_Target* t)
+void VT100::VT100Render(void)
 {
-	con->Render(t, 0, 0, this->font_scale);
+	con->Render(this->render_target, this->screen_offsetx, this->screen_offsety, this->font_scale);
 	GPU_DeactivateShaderProgram();
 
 	/* Draw overlay above the selected text if it is selected or dragging */
@@ -559,14 +561,13 @@ void VT100::VT100Render(GPU_Target* t)
 	{
 		/* In case the user has selected it from right to left, orient the selection coords */
 		orientSelectedCoords();
-		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
+		for (int i = this->selected_start_x + this->selected_start_y * this->con->console_w; i < this->selected_end_x + this->selected_end_y * this->con->console_w; i++)
 		{
-			for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
-			{
-				int sx, sy;
-				consoleToScreenCoords(x, y, &sx, &sy);
-				GPU_RectangleFilled(t, sx, sy, sx + con->font_w * this->font_scale, sy + con->font_h * this->font_scale, SDL_Color{255, 255, 255, 128});
-			}
+			int y = i / this->con->console_w;
+			int x = i % this->con->console_w;
+			int sx, sy;
+			consoleToScreenCoords(x, y, &sx, &sy);
+			GPU_RectangleFilled(this->render_target, sx, sy, sx + con->font_w * this->font_scale, sy + con->font_h * this->font_scale, SDL_Color{255, 255, 255, 128});
 		}
 	}
 }
@@ -588,12 +589,11 @@ void VT100::VT100CopyToClipboard()
 		std::string result = "";
 		/* In case the user has selected it from right to left, orient the selection coords */
 		orientSelectedCoords();
-		for (int x = this->selected_start_x; x <= this->selected_end_x; x++)
+		for (int i = this->selected_start_x + this->selected_start_y * this->con->console_w; i <= this->selected_end_x + this->selected_end_y * this->con->console_w; i++)
 		{
-			for (int y = this->selected_start_y; y <= this->selected_end_y; y++)
-			{
-				result += con->ReadChar(x, y);
-			}
+			int y = i / this->con->console_w;
+			int x = i % this->con->console_w;
+			result += this->con->ReadChar(x, y);
 		}
 		CopyToClipboard(result);
 		this->is_selected = false;

@@ -2,7 +2,7 @@
 #include <string>
 
 #include "ConfigEditor.h"
-#include "HocevarPFD.h"
+#include "hocevar/pfd.h"
 
 void ConfigEditor::Render(void)
 {

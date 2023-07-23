@@ -9,6 +9,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include "SDL_gpu.h"
+#include "CustomTitleBar.h"
 #include "Shaders.h"
 #include "Console.h"
 #include "VT100.h"
@@ -17,6 +18,7 @@
 #include "ConfigEditor.h"
 #include "ConfigSelector.h"
 #include "ContextMenu.h"
+
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
@@ -30,22 +32,32 @@ int main()
 
 	/* Calculate the required screen resolution from the configuration */
 	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width);
-	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height);
+	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT;
 
 	/* Create the screen */
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
 	GPU_Target* screen = GPU_Init(resolution_x, resolution_y, GPU_DEFAULT_INIT_FLAGS);
+
 	if (screen == NULL)
 	{
 		return 1;
 	}
 
+	SetWindowText(GetActiveWindow(), L"CRTerm.exe starting...");
+	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
+
 	SDL_Event ev;
 	bool done = false;
-	VT100* vt100_term = new VT100(cfg);
-
+	
+	VT100* vt100_term = new VT100(cfg, screen);
+	/* Add the offsety as the custom titlebar height */
+	vt100_term->screen_offsety = TITLE_BAR_HEIGHT;
 	/* UI code */
 	CRTermUIInstance* UI = new CRTermUIInstance(screen);
+
+	/* Prepare custom title bar */
+	CustomTitleBar* title = new CustomTitleBar(screen);
+	title->show = true;
 
 	ConfigEditor* cfg_edit = new ConfigEditor();
 	cfg_edit->cfg = cfg;
@@ -68,13 +80,16 @@ int main()
 	cmenu->Add("Select Config");
 	cmenu->Add("Config Editor");
 
+	UI->AddElement(title);
 	UI->AddElement(cfg_edit);
 	UI->AddElement(cfg_load);
 	UI->AddElement(cmenu);
 
 	SDL_Cursor* ibeam_cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
 	SDL_Cursor* normal_cur = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-
+	
+	int mouse_x = 0, mouse_y = 0;
+	SDL_GetMouseState(&mouse_x, &mouse_y);
 	while (!done)
 	{
 		while (SDL_PollEvent(&ev))
@@ -84,14 +99,17 @@ int main()
 			case SDL_QUIT:
 				done = true;
 				break;
+			case SDL_MOUSEMOTION:
+				SDL_GetMouseState(&mouse_x, &mouse_y);
+				break;
 			default:
 				break;
 			}
 			UI->HandleEvent(ev);
 			/* Don't handle events if config window is on */
-			if (!cfg_edit->show && !cfg_load->show && !cmenu->menu_toggle)
+			if (!cfg_edit->show && !cfg_load->show && !cmenu->menu_toggle && mouse_y > TITLE_BAR_HEIGHT)
 			{
-				/* Set the cursor to I beam if normal operation of terminal. */
+				/* Set the cursor to I beam if normal operation of terminal, if not in titlebar */
 				SDL_SetCursor(ibeam_cur);
 				vt100_term->VT100HandleEvent(ev);
 			}
@@ -102,8 +120,9 @@ int main()
 			}
 		}
 		GPU_Clear(screen);
+		GPU_RectangleFilled(screen, 0, 0, resolution_x, TITLE_BAR_HEIGHT, SDL_Color{ 21, 21, 21, 255 });
 		/* First render the terminal */
-		vt100_term->VT100Render(screen);
+		vt100_term->VT100Render();
 		/* Then the UI */
 		UI->Render();
 		GPU_Flip(screen);

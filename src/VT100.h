@@ -44,6 +44,7 @@ class VT100
 {
 public:
 	Console* con;
+	GPU_Target* render_target;
 	int fg;
 	int bg;
 	bool bracketed_mode;
@@ -53,12 +54,16 @@ public:
 	int selected_end_x = 0;
 	int selected_end_y = 0;
 
+	int screen_offsetx = 0;
+	int screen_offsety = 0;
+
 	VT100ParseState parser_state;
 	VT100Argument argument_stack[VT100_ARG_STACK_SIZE];
 	std::string control_strings[VT100_STRING_SIZE];
 	int control_string_idx;
 	int stack_ptr;
 
+	SDL_Window* sdl_window;
 	
 	HPCON hPC { INVALID_HANDLE_VALUE };
 	HANDLE fromProgram { INVALID_HANDLE_VALUE };
@@ -87,20 +92,20 @@ public:
 	/* Required for mouse interactivty */
 	float font_scale;
 
-	VT100(CRTermConfiguration*);
+	VT100(CRTermConfiguration*, GPU_Target*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);
 	void VT100HandleEvent(SDL_Event);
 	void VT100Shutdown();
-	void VT100Render(GPU_Target*);
+	void VT100Render();
 	void VT100CopyToClipboard();
 	void VT100PasteFromClipboard();
 
 	inline void screenToConsoleCoords(int screenx, int screeny, int* conx, int* cony)
 	{
 		/* Translate from screen coordinates to console coordinates */
-		float screen_unscaled_x = screenx / font_scale;
-		float screen_unscaled_y = screeny / font_scale;
+		float screen_unscaled_x = (screenx - screen_offsetx) / font_scale;
+		float screen_unscaled_y = (screeny - screen_offsety) / font_scale;
 
 		// Next divide by the font_w to get the X coord, and font_h to get the y coord
 		*conx = screen_unscaled_x / this->con->font_w;
@@ -109,8 +114,8 @@ public:
 
 	inline void consoleToScreenCoords(int conx, int cony, int* screenx, int* screeny)
 	{
-		*screenx = conx * this->con->font_w * this->font_scale;
-		*screeny = cony * this->con->font_h * this->font_scale;
+		*screenx = screen_offsetx + conx * this->con->font_w * this->font_scale;
+		*screeny = screen_offsety + cony * this->con->font_h * this->font_scale;
 	}
 
 	inline void getConsoleMouseCoords(int* conx, int* cony)

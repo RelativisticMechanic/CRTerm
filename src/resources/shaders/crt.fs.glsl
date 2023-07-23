@@ -27,9 +27,9 @@ const float crt_noise_fraction = 0.1;
 // CRT Effect settings
 uniform float warp; 
 float scan = 0.75;
-float scanline_speed = 0.85;
+float scanline_speed = 0.50;
 float scanline_intensity = 0.15;
-float scanline_spread = 0.5;
+float scanline_spread = 0.2;
 
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
 vec4 crtGlow(in vec2 uv)
@@ -98,7 +98,7 @@ void main(void)
     	fragColor = vec4(mix(crtGlow(uv).rgb, vec3(0.0),apply),1.0);
         fragColor = vec4(mix(fragColor.rgb, length(texture(crt_background, uv).rgb)*back_color, background_brightness),1.0);
         // Add a scanline going up and down
-        fragColor.rgb += scanline_intensity*(exp(-(1/scanline_spread)*abs(sin(abs((1-uv.y) - abs(cos(scanline_speed*time)*cos(scanline_speed*time)))))))*back_color;
+        fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin(abs(uv.y - abs(cos(scanline_speed*time)))))) * back_color;
         // Add noise
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
     }

@@ -13,7 +13,7 @@
 
 #include <iostream>
 #include <string>
-#include "NlohmannJSON.h"
+#include "nlohmann/json.h"
 
 typedef struct
 {

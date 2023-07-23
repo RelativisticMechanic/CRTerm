@@ -25,6 +25,12 @@
     <Filter Include="Header Files\imgui">
       <UniqueIdentifier>{0e9d4221-32ab-406a-8ec4-006518f7fac8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\hocevar">
+      <UniqueIdentifier>{a89dc938-116e-4e91-a36f-73ac58eae51a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\nlohmann">
+      <UniqueIdentifier>{74fe27cb-d2de-467f-ac54-db35cf34e78f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRTerm.cpp">
@@ -81,6 +87,9 @@
     <ClCompile Include="ContextMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CustomTitlebar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders.h">
@@ -96,9 +105,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CRTermConfig.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NlohmannJSON.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Win32ClipBoard.h">
@@ -407,14 +413,39 @@
     <ClInclude Include="lib\imgui\include\imgui_stdlib.h">
       <Filter>Header Files\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="HocevarPFD.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ConfigSelector.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ContextMenu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CustomTitleBar.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\hocevar\pfd.h">
+      <Filter>Header Files\hocevar</Filter>
+    </ClInclude>
+    <ClInclude Include="include\nlohmann\json.h">
+      <Filter>Header Files\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="UITheme.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CRTerm.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resources\logo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\images\crt_logo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
