@@ -1,6 +1,6 @@
 <img align="right" width="200" height="200" src="images/crterm-logo.png">
 
-# CRTerm 
+# Gautam's CRTerm 
 A CRT style terminal for Windows (or more appropriately, a Windows take on cool-retro-term)
 
 ![Windows 11](https://img.shields.io/badge/Windows%2011-%230079d5.svg?style=for-the-badge&logo=Windows%2011&logoColor=white)
