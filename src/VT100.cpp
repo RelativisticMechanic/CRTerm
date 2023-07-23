@@ -12,6 +12,7 @@ VT100::VT100(CRTermConfiguration* cfg)
 	con = new Console(cfg);
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
+	this->bracketed_mode = true;
 	this->CTRL_down = false;
 	this->is_selected = false;
 	this->parser_state = VTSTATE_NORMAL;
@@ -436,14 +437,31 @@ void VT100::VT100Take(unsigned char c)
 		switch (c)
 		{
 		case 'h':
-			/* Show cursor */
-			con->ShowCursor();
+			/* CSI ? 25 h Show cursor */
+			if (this->argument_stack[0].value == 25)
+			{
+				con->ShowCursor();
+			}
+			/* CST ? 2004 h Turn ON bracketed paste */
+			if (this->argument_stack[0].value == 2004)
+			{
+				this->bracketed_mode = true;
+			}
 			break;
 		case 'l':
-			/* Hide cursor */
-			con->HideCursor();
+			/* CSI ? 25 l Hide cursor */
+			if (this->argument_stack[0].value == 25)
+			{
+				con->HideCursor();
+			}
+			/* CST ? 2004 h Turn OFF bracketed paste */
+			if (this->argument_stack[0].value == 2004)
+			{
+				this->bracketed_mode = false;
+			}
 			break;
 		case '$':
+			/* CSI ? ARGS $p - Unimplemented */
 			parser_state = VTSTATE_IGNORE_NEXT;
 			break;
 		}
@@ -584,10 +602,32 @@ void VT100::VT100CopyToClipboard()
 
 void VT100::VT100PasteFromClipboard()
 {
-	/* Take data from clipboard also escape the string as per ANSI */
-	std::string clipboard = "\x1B[200~" + GetFromClipboard() + "\x1B[201~";
+	/* Take data from clipboard also escape the string as per ANSI if in bracketed mode */
+	std::string clipboard = GetFromClipboard();
+	if (bracketed_mode)
+	{
+		clipboard = "\x1B[200~" + clipboard + "\x1B[201~";
+	}
+
+	bool permission = false;
+
+	if (!bracketed_mode)
+	{
+		/* Show warning to user if pasting in unbracketed mode */
+		int result = MessageBox(this->console_window, L"The terminal is in unbracketed mode. Pasting unescaped text could be dangerous. Do it?", L"CRTerm.exe", MB_OKCANCEL | MB_ICONWARNING);
+		if (result != IDCANCEL)
+		{
+			permission = true;
+		}
+	}
+	else
+	{
+		permission = true;
+	}
+
 	/* Send to pipe! */
-	WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
+	if(permission)
+		WriteFile(this->toProgram, clipboard.c_str(), clipboard.length(), NULL, NULL);
 }
 
 /* This function is run on a separate thread that listens to the terminal output and sends them byte by byte */

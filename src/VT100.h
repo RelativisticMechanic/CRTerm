@@ -46,6 +46,7 @@ public:
 	Console* con;
 	int fg;
 	int bg;
+	bool bracketed_mode;
 	bool is_selected, is_dragging;
 	int selected_start_x = 0;
 	int selected_start_y = 0;
