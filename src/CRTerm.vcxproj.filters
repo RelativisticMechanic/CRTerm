@@ -90,6 +90,9 @@
     <ClCompile Include="CustomTitlebar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ArgumentParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders.h">
@@ -437,6 +440,9 @@
     <ClInclude Include="CRTerm.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ArgumentParser.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CRTerm.rc">
@@ -444,10 +450,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="resources\logo.png">
+    <Image Include="icon.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="..\images\crt_logo.png">
+    <Image Include="crterm.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -10,7 +10,7 @@
     "crt_shader": "shaders/crt",
     "bell": "bell.wav",
     "crt_warp": 0.0,
-    "shell_command": "cmd.exe %USERPROFILE%",
+    "shell_command": "cmd /K \"cd %userprofile%\"",
     "blink_interval": 300,
     "default_fg": 2,
     "default_bg": 2,

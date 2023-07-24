@@ -8,6 +8,7 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
+#define SDL_MAIN_HANDLED
 #include "SDL_gpu.h"
 #include "CustomTitleBar.h"
 #include "Shaders.h"
@@ -18,16 +19,31 @@
 #include "ConfigEditor.h"
 #include "ConfigSelector.h"
 #include "ContextMenu.h"
+#include "ArgumentParser.h"
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
 
 void menuCallBack(int, void*);
 
-int main()
+int main(int argc, char* argv[])
 {
 	/* Read the path of the configuration JSON from "default" and then load it */
 	CRTermConfiguration* cfg = new CRTermConfiguration(GetDefaultConfigJSON());
+	
+	/* Parse arguments */
+	ArgumentParser arg_parse;
+	arg_parse.AddArgument("fs");
+	arg_parse.AddArgument("cw");
+	arg_parse.AddArgument("ch");
+	arg_parse.AddArgument("cmd", true);
+
+	arg_parse.Parse(argc, argv);
+
+	arg_parse.GetArgument("cw", cfg->console_width);
+	arg_parse.GetArgument("ch", cfg->console_height);
+	arg_parse.GetArgument("fs", cfg->font_scale);
+	arg_parse.GetArgument("cmd", cfg->shell_command);
 
 	/* Calculate the required screen resolution from the configuration */
 	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;

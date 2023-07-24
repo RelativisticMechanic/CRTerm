@@ -25,7 +25,7 @@ The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the
 
 The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. 
 
-A release is planned in the near future.
+The current version is 0.2.0, it is still in active development and may not replace your terminal application.
 
 ## Features
 
