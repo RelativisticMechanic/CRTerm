@@ -115,8 +115,8 @@ public:
 
 	inline void consoleToScreenCoords(int conx, int cony, int* screenx, int* screeny)
 	{
-		*screenx = screen_offsetx + conx * this->con->font_w * this->font_scale;
-		*screeny = screen_offsety + cony * this->con->font_h * this->font_scale;
+		*screenx = (int)((double)screen_offsetx + (double)conx * (double)this->con->font_w * this->font_scale);
+		*screeny = (int)((double)screen_offsety + (double)cony * (double)this->con->font_h * this->font_scale);
 	}
 
 	inline void getConsoleMouseCoords(int* conx, int* cony)

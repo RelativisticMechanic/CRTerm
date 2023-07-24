@@ -19,7 +19,6 @@
 #include "ConfigSelector.h"
 #include "ContextMenu.h"
 
-
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
 
@@ -119,8 +118,8 @@ int main()
 				/* Set the cursor to normal if a UI element is online */
 				SDL_SetCursor(normal_cur);
 			}
-		}
-		GPU_ClearColor(screen, SDL_Color{ 40, 40, 40, 255 });
+		} 
+		GPU_ClearColor(screen, SDL_Color{ 52, 55, 64, 255 });
 		/* First render the terminal */
 		vt100_term->VT100Render();
 		/* Then the UI */

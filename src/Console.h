@@ -14,6 +14,10 @@
 #include "CRTermConfig.h"
 #include "SDL_gpu.h"
 
+#define CONSOLE_MIN_LINES 500
+#define CONSOLE_MAX_LINES 10000
+#define CONSOLE_DEFAULT_LINES 1000
+
 /* 
 	Helper function to construct console attributes, 
 	which are basically VGA attributes that store
@@ -56,16 +60,35 @@ public:
 	/* TODO: Some of these are better of in private. */
 	unsigned char* buffer;
 	unsigned char* attrib_buffer;
+	/* Character-wise resolution of the console */
 	int console_w, console_h;
 	GPU_Image* console_font;
 	GPU_Image* crt_background;
 	int font_w, font_h;
 	int cursor_x, cursor_y;
+	/* Actual resolution of the console (in pixels) */
 	int console_resolution_x, console_resolution_y;
 	int default_fore_color, default_back_color;
+	/* No. of millseconds after which the console must blink */
 	int blink_interval;
+	/* 
+		For scrolling, console starts drawing from start_line*console_w, last_line is the latest start_line position
+		For all time, start_line <= last_line. start_line is decremented when the user hits mousewheel up
+		and Console->HistoryUp() is called. 
+
+		maxlines is the maximum lines the console stores, beyond that, it starts to overwrite its old history.
+		Generally, the lower limit for maxlines is 500, and upper limit is 10000 lines. 
+	*/
 	int start_line, last_line; 
-	int maxlines = 1000;
+	int maxlines;
+
+	/* Selecting text into the terminal */
+	bool is_selected;
+	int selected_start_x = 0, selected_start_y = 0;
+	int selected_end_x = 0, selected_end_y = 0;
+	/*
+		Stores audio data for the bell sound.
+	*/
 	std::string bell_wave_file;
 
 	Console(CRTermConfiguration*);
@@ -86,6 +109,7 @@ public:
 	void ClearExt(int fromx, int fromy, int tox, int toy);
 	void HistoryUp();
 	void HistoryDown();
+	void SetSelection(bool selection, int start_x=0, int start_y=0, int end_x=0, int end_y=0);
 	/* The 256 letters glyphs extracted from the font image */
 	GPU_Image* char_blocks[256];
 

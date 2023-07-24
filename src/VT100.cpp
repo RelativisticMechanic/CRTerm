@@ -92,7 +92,7 @@ void VT100::VT100Take(unsigned char c)
 		{
 			std::cout << "Unexpected identifier after VT_ESCAPE: " << c << std::endl;
 			parser_state = VTSTATE_NORMAL;
-			VT100Putc(c);
+			//VT100Putc(c);
 		}
 		break;
 	case VTSTATE_ATTR:
@@ -551,9 +551,13 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 		break;
 	case SDL_MOUSEWHEEL:
 		if (ev.wheel.y > 0)
+		{
 			this->con->HistoryUp();
+		}
 		else
+		{
 			this->con->HistoryDown();
+		}
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if (ev.button.button == SDL_BUTTON_LEFT)
@@ -585,23 +589,18 @@ void VT100::VT100Send(std::string sequence)
 
 void VT100::VT100Render(void)
 {
-	con->Render(this->render_target, this->screen_offsetx, this->screen_offsety, this->font_scale);
-	GPU_DeactivateShaderProgram();
-
 	/* Draw overlay above the selected text if it is selected or dragging */
 	if (is_selected || is_dragging)
 	{
-		/* In case the user has selected it from right to left, orient the selection coords */
 		orientSelectedCoords();
-		for (int i = this->selected_start_x + this->selected_start_y * this->con->console_w; i < this->selected_end_x + this->selected_end_y * this->con->console_w; i++)
-		{
-			int y = i / this->con->console_w;
-			int x = i % this->con->console_w;
-			int sx, sy;
-			consoleToScreenCoords(x, y, &sx, &sy);
-			GPU_RectangleFilled(this->render_target, sx, sy, sx + con->font_w * this->font_scale, sy + con->font_h * this->font_scale, SDL_Color{255, 255, 255, 128});
-		}
+		this->con->SetSelection(true, selected_start_x, selected_start_y, selected_end_x, selected_end_y);
 	}
+	else
+	{
+		this->con->SetSelection(false);
+	}
+	con->Render(this->render_target, this->screen_offsetx, this->screen_offsety, this->font_scale);
+	GPU_DeactivateShaderProgram();
 }
 void VT100::VT100Shutdown()
 {

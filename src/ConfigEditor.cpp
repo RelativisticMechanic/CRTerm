@@ -49,6 +49,10 @@ void ConfigEditor::Render(void)
     ImGui::SameLine();
     ImGui::InputInt("##blink_interval", &(cfg->blink_interval));
 
+    ImGui::Text("Maximum Lines");
+    ImGui::SameLine();
+    ImGui::InputInt("##maxlines", &(cfg->maxlines));
+
     ImGui::Text("Default FG");
     ImGui::SameLine();
     ImGui::InputInt("##default_fg", &(cfg->default_fore_color));

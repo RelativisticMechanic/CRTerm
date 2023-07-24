@@ -47,7 +47,7 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		this->default_fore_color = configuration_data.at("default_fg");
 		this->default_back_color = configuration_data.at("default_bg");
 		this->crt_warp = configuration_data.at("crt_warp");
-
+		this->maxlines = configuration_data.at("maxlines");
 		int i = 0;
 		for (auto& color : configuration_data.at("color_scheme"))
 		{
@@ -67,9 +67,21 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		MessageBox(GetActiveWindow(), (LPCWSTR)errW.c_str(), L"Error parsing default.json", MB_OK | MB_ICONERROR);
 		exit(-1);
 	}
+	catch (nlohmann::json::other_error& error)
+	{
+		std::string err = error.what();
+		std::wstring errW = std::wstring(err.begin(), err.end());
+		MessageBox(GetActiveWindow(), (LPCWSTR)errW.c_str(), L"Error loading default.json", MB_OK | MB_ICONERROR);
+	}
+	catch (nlohmann::json::type_error& error)
+	{
+		std::string err = error.what();
+		std::wstring errW = std::wstring(err.begin(), err.end());
+		MessageBox(GetActiveWindow(), (LPCWSTR)errW.c_str(), L"Error loading default.json", MB_OK | MB_ICONERROR);
+	}
 	catch (...)
 	{
-		MessageBox(GetActiveWindow(), L"An exception occurred while loading default.json", L"Error loading default.json", MB_OK | MB_ICONERROR);
+		MessageBox(GetActiveWindow(), L"An unknown error occurred", L"Error loading default.json", MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -94,6 +106,7 @@ void CRTermConfiguration::Save(std::string filename)
 	output_json["default_fg"] = this->default_fore_color;
 	output_json["default_bg"] = this->default_back_color;
 	output_json["crt_warp"] = this->crt_warp;
+	output_json["maxlines"] = this->maxlines;
 
 	int color_scheme_arr[16][3];
 
@@ -104,7 +117,7 @@ void CRTermConfiguration::Save(std::string filename)
 		color_scheme_arr[i][2] = color_scheme[i].b;
 	}
 
-	output_json["color_sheme"] = color_scheme_arr;
+	output_json["color_scheme"] = color_scheme_arr;
 
 	std::ofstream output(filename);
 	output << std::setw(4) << output_json;

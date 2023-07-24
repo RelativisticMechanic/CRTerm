@@ -1,8 +1,8 @@
 {
     "font": "font.png",
-    "font_width": 16,
-    "font_height": 32,
-    "font_scale": 0.8,
+    "font_width": 8,
+    "font_height": 16,
+    "font_scale": 1.2,
     "console_width": 120,
     "console_height": 30,
     "background": "crt.png",
@@ -10,10 +10,11 @@
     "crt_shader": "shaders/crt",
     "bell": "bell.wav",
     "crt_warp": 0.0,
-    "shell_command": "cmd.exe %userprofile%",
+    "shell_command": "cmd.exe %USERPROFILE%",
     "blink_interval": 300,
     "default_fg": 2,
     "default_bg": 2,
+    "maxlines": 1000,
 
     "color_scheme":
     [

@@ -20,6 +20,11 @@ Console::Console(CRTermConfiguration* cfg)
 	this->cursor_x = 0;
 	this->cursor_y = 0;
 	
+	this->maxlines = cfg->maxlines;
+	/* Check the maxlines, if greater than 10000 or less than 500 default to 1000 */
+	if (this->maxlines < CONSOLE_MIN_LINES || this->maxlines > CONSOLE_MAX_LINES)
+		this->maxlines = CONSOLE_DEFAULT_LINES;
+
 	this->console_resolution_x = this->console_w * this->font_w;
 	this->console_resolution_y = this->console_h * this->font_h;
 
@@ -194,6 +199,14 @@ void Console::HistoryDown()
 		start_line++;
 }
 
+void Console::SetSelection(bool selection, int start_x, int start_y, int end_x, int end_y)
+{
+	this->selected_start_x = start_x;
+	this->selected_start_y = start_y;
+	this->selected_end_x = end_x;
+	this->selected_end_y = end_y;
+	this->is_selected = selection;
+}
 void Console::SetCursor(int x, int y)
 {
 	this->cursor_x = x;
@@ -317,6 +330,8 @@ unsigned char Console::ReadChar(int x, int y)
 		return 0;
 	return this->buffer[this->start_line * this->console_w + y * this->console_w + x];
 }
+
+/* The Console Render function, this is what makes the magic happen :) */
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
@@ -330,6 +345,8 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		this->show_cursor = !this->show_cursor;
 		this->cursor_clock = time;
 	}
+	/* Set text alpha to 1.0 */
+	GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
 	for (int y = 0; y < this->console_h; y++)
 	{
 		for (int x = 0; x < this->console_w; x++)
@@ -353,6 +370,35 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		}
 	}
 
+	/* Draw the scroll bar if we are scrolling i.e. last_line != start_line and the user has scrolled up */
+	if (start_line != last_line)
+	{
+		GPU_Rect scrollbar;
+		scrollbar.h = (((float)this->console_h) / ((float)this->last_line + this->console_h)) * (this->render_buffer->h);
+		scrollbar.y = scrollbar.h * 0.5 * ((float)this->start_line / (float)(this->last_line + 1.0));
+		scrollbar.w = 8;
+		scrollbar.x = this->render_buffer->w - 8;
+		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
+		/* Set scroll bar alpha to 0.8 */
+		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.8);
+		GPU_RectangleFilled(this->render_buffer->target, scrollbar.x, scrollbar.y, scrollbar.x + scrollbar.w, scrollbar.y + scrollbar.h, SDL_Color{ 255, 255, 255, 255 });
+	}
+
+	/* Draw the selection rectangle if the user has selected some text, this bool passed from VT100 class */
+	if (this->is_selected)
+	{
+		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
+		/* Set selected text alpha to 0.4 */
+		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.4);
+		for (int i = this->selected_start_x + this->selected_start_y * this->console_w; i < this->selected_end_x + this->selected_end_y * this->console_w; i++)
+		{
+			
+			int y = i / this->console_w;
+			int x = i % this->console_w;
+			GPU_RectangleFilled(this->render_buffer->target, x * this->font_w, y * this->font_h, (x + 1) * this->font_w, (y + 1) * this->font_h, SDL_Color{ 255, 255, 255, 255 });
+		}
+	}
+
 	/* Draw the cursor, if we are not scrolling */
 	if (this->show_cursor && this->start_line == this->last_line)
 	{
@@ -370,6 +416,10 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		}
 	}
 
+	/* 
+		We have now rendered the terminal to the local render buffer,
+		now we pass it through the CRT shader and scale it up.
+	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 	float resolution[2] = { (float)t->w, (float)t->h };
 	/* Set shader parameters */
@@ -383,17 +433,6 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
-
-	/* Draw the scroll bar */
-	if (start_line != last_line)
-	{
-		GPU_Rect scrollbar;
-		scrollbar.h = (((float)this->console_h) / ((float)this->last_line + this->console_h)) * (t->h - TITLE_BAR_HEIGHT);
-		scrollbar.y = TITLE_BAR_HEIGHT + scrollbar.h * 0.5 * ((float)this->start_line / (float)(this->last_line + 1.0));
-		scrollbar.w = SCROLL_BAR_WIDTH;
-		scrollbar.x = t->w - SIDES_WIDTH - SCROLL_BAR_WIDTH;
-		GPU_RectangleFilled2(t, scrollbar, SDL_Color{ 100, 100, 100, 255 });
-	}
 	/*
 	Now apply the CRT effect shader
 	The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.

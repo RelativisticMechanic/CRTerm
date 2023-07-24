@@ -39,6 +39,7 @@ public:
 	int default_fore_color;
 	int default_back_color;
 	int blink_interval;
+	int maxlines;
 	float crt_warp;
 	CRTermColor color_scheme[16];
 
