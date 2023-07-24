@@ -1,10 +1,5 @@
 #version 330
 
-#define GOLDEN_RATIO (1.61803398874989484820)
-#define GOLDEN_RATIO_MIN_ONE (GOLDEN_RATIO - 1.0)
-#define LINE (0.01666f)
-#define SCANLINE_SPEED 1.0
-
 in vec4 color;
 in vec2 texCoord;
 out vec4 fragColor;
@@ -15,9 +10,10 @@ uniform float time;
 uniform vec2 resolution;
 
 // Glow effect settings
-const float blurSize = 1.5/512.0;
-const float intensity = 1.4;
-const float speed = 10.0;
+const float blurSize = 1.0/512.0;
+const float intensity = 1.0;
+const float speed = 20.0;
+const float flicker_fraction = 0.15;
 
 // Theme settings
 uniform vec3 back_color;
@@ -27,7 +23,7 @@ const float crt_noise_fraction = 0.1;
 // CRT Effect settings
 uniform float warp; 
 float scan = 0.75;
-float scanline_speed = 0.50;
+float scanline_speed = 0.5;
 float scanline_intensity = 0.15;
 float scanline_spread = 0.2;
 
@@ -59,7 +55,7 @@ vec4 crtGlow(in vec2 uv)
     sum += texture(tex, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;
     sum += texture(tex, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;
 
-    vec4 result = sum * (intensity + 0.5*sin(time*speed)) + texture(tex, texcoord);
+    vec4 result = sum * (intensity + flicker_fraction * intensity *sin(time*speed)) + texture(tex, texcoord);
     
     return result;
 }
@@ -98,7 +94,7 @@ void main(void)
     	fragColor = vec4(mix(crtGlow(uv).rgb, vec3(0.0),apply),1.0);
         fragColor = vec4(mix(fragColor.rgb, length(texture(crt_background, uv).rgb)*back_color, background_brightness),1.0);
         // Add a scanline going up and down
-        fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin(abs(uv.y - abs(cos(scanline_speed*time)))))) * back_color;
+        fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin((uv.y - abs(cos(scanline_speed*time)))))) * back_color;
         // Add noise
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
     }

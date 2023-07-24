@@ -31,8 +31,8 @@ int main()
 	CRTermConfiguration* cfg = new CRTermConfiguration(GetDefaultConfigJSON());
 
 	/* Calculate the required screen resolution from the configuration */
-	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width);
-	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT;
+	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;
+	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT + SIDES_WIDTH;
 
 	/* Create the screen */
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
@@ -51,6 +51,7 @@ int main()
 	VT100* vt100_term = new VT100(cfg, screen);
 	/* Add the offsety as the custom titlebar height */
 	vt100_term->screen_offsety = TITLE_BAR_HEIGHT;
+	vt100_term->screen_offsetx = SIDES_WIDTH;
 	/* UI code */
 	CRTermUIInstance* UI = new CRTermUIInstance(screen);
 
@@ -78,6 +79,7 @@ int main()
 	cmenu->Add("Paste");
 	cmenu->Add("Select Config");
 	cmenu->Add("Config Editor");
+	cmenu->Add("Send ^C");
 
 	UI->AddElement(title);
 	UI->AddElement(cfg_edit);
@@ -118,8 +120,7 @@ int main()
 				SDL_SetCursor(normal_cur);
 			}
 		}
-		GPU_Clear(screen);
-		GPU_RectangleFilled(screen, 0, 0, resolution_x, TITLE_BAR_HEIGHT, SDL_Color{ 21, 21, 21, 255 });
+		GPU_ClearColor(screen, SDL_Color{ 40, 40, 40, 255 });
 		/* First render the terminal */
 		vt100_term->VT100Render();
 		/* Then the UI */
@@ -155,6 +156,10 @@ void menuCallBack(int item, void* data)
 	case 3:
 		/* Enable Config Editor */
 		cfg_edit_instance->show = true;
+		break;
+	case 4:
+		/* Send ^C */
+		term_instance->VT100Send("\x3");
 		break;
 	default:
 		break;

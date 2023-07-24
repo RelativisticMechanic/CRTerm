@@ -17,19 +17,22 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 
 This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com/Swordfish90/cool-retro-term). Unfortunately, this program while being cool, was only available for Linux / MacOS, so I decided to write one for Windows.
 
+Watch it in [action](https://www.youtube.com/watch?v=kIuGYarFiT4).
+
 ## Description
 
-The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the UI part, it employs Dear ImGui. It uses Nlohmann's JSON library and Sam Hocevar's portable file dialogs as well. It has a 16 color palette. The mouse is used for selection, copying and pasting.
+The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the UI part, it employs Dear ImGui. It uses Nlohmann's JSON library and Sam Hocevar's portable file dialogs as well. It has a 16 color palette. The mouse is used for selection, copying and pasting. It also implements a scrollback buffer which can be used to view the terminal's history.
 
-The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. Ideally, you'll place all the require DLLs (SDL2.dll, SDL_gpu.dll, etc.) along with the EXE file and all the stuff in the src/resources directory.
+The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. 
 
 A release is planned in the near future.
 
 ## Features
 
 * Subset of VT220 is supported
-* Mouse selection (copy-pasted)
+* Mouse selection (copy, and paste)
 * 16-color palette
+* Scrollback history
 
 Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 

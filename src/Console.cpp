@@ -7,7 +7,7 @@
 
 #include "Console.h"
 #include "Shaders.h"
-
+#include "CustomTitleBar.h"
 
 Console::Console(CRTermConfiguration* cfg)
 {
@@ -26,8 +26,8 @@ Console::Console(CRTermConfiguration* cfg)
 	this->default_fore_color = cfg->default_fore_color;
 	this->default_back_color = cfg->default_back_color;
 	/* Create the character and attribute buffers */
-	this->buffer = (unsigned char*)calloc(this->console_w * this->console_h, sizeof(char));
-	this->attrib_buffer = (unsigned char*)calloc(this->console_w * this->console_h, sizeof(char));
+	this->buffer = (unsigned char*)calloc(this->console_w * this->maxlines, sizeof(char));
+	this->attrib_buffer = (unsigned char*)calloc(this->console_w * this->maxlines, sizeof(char));
 
 	/* Load the font and the background image */
 	this->console_font = GPU_LoadImage(cfg->bitmap_font_file.c_str());
@@ -72,8 +72,8 @@ Console::Console(CRTermConfiguration* cfg)
 
 	/* Cursor clock for blinking */
 	this->blink_interval = cfg->blink_interval;
-	this->cursor_clock = GetTickCount64();
-	this->prev_time = GetTickCount64();
+	this->cursor_clock = SDL_GetTicks64();
+	this->prev_time = SDL_GetTicks64();
 	this->show_cursor = true;
 
 	/* Load the color scheme */
@@ -85,6 +85,8 @@ Console::Console(CRTermConfiguration* cfg)
 	/* Set CRT effect parameters from configuration */
 	this->crt_warp = cfg->crt_warp;
 
+	this->start_line = 0;
+	this->last_line = 0;
 	/* Clear the console */
 	this->Clear();
 }
@@ -103,6 +105,7 @@ void Console::Clear()
 
 void Console::ClearExt(int fromx, int fromy, int tox, int toy)
 {
+	last_line = start_line;
 	if (fromx < 0)
 	{
 		fromx = 0;
@@ -130,10 +133,10 @@ void Console::ClearExt(int fromx, int fromy, int tox, int toy)
 		std::swap(fromy, toy);
 	}
 
-	for (int i = fromx + fromy * this->console_w; i < tox + toy * this->console_w; i++)
+	for (int i = fromx + fromy * this->console_w; i <= tox + toy * this->console_w; i++)
 	{
-		this->buffer[i] = ' ';
-		this->attrib_buffer[i] = CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color);
+		this->buffer[start_line * this->console_w + i] = ' ';
+		this->attrib_buffer[start_line * this->console_w + i] = CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color);
 	}
 }
 
@@ -160,14 +163,35 @@ void Console::LimitCursor()
 
 void Console::Scroll()
 {
-	/* Scroll up by 1 line */
-	memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(char) * 1 * this->console_w), this->console_w * (this->console_h - 1));
-	memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(char) * this->console_w), this->console_w * (this->console_h - 1));
+	if (start_line < maxlines - console_h)
+	{
+		start_line++;
+	}
+	/* If we have exceeded the allocated terminal buffer, it is time to overwrite */
+	else
+	{
+		/* Scroll up by 1 line */
+		memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(char) * 1 * this->console_w), this->console_w * (this->maxlines - 1));
+		memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(char) * this->console_w), this->console_w * (this->maxlines - 1));
+	}
 	/* Empty last line */
-	memset((void*)((uintptr_t)this->buffer + sizeof(char) * (this->console_h - 1) * this->console_w), ' ', this->console_w);
-	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(char) * (this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
+	memset((void*)((uintptr_t)this->buffer + sizeof(char) * (this->start_line + this->console_h - 1) * this->console_w), ' ', this->console_w);
+	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(char) * (this->start_line + this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
 	this->cursor_y -= 1;
 	this->cursor_x = 0;
+	last_line = start_line;
+}
+
+void Console::HistoryUp()
+{
+	if(start_line > 0)
+		start_line--;
+}
+
+void Console::HistoryDown()
+{
+	if (start_line < last_line)
+		start_line++;
 }
 
 void Console::SetCursor(int x, int y)
@@ -261,9 +285,10 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 
 void Console::PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color)
 {
+	start_line = last_line;
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h) return;
-	this->buffer[y * this->console_w + x] = c;
-	this->attrib_buffer[y * this->console_w + x] = CONSTRUCT_ATTRIBUTE(fore_color, back_color);
+	this->buffer[start_line * this->console_w + y * this->console_w + x] = c;
+	this->attrib_buffer[start_line * this->console_w + y * this->console_w + x] = CONSTRUCT_ATTRIBUTE(fore_color, back_color);
 }
 
 void Console::Puts(std::string s)
@@ -277,25 +302,25 @@ void Console::Puts(std::string s)
 void Console::ShowCursor()
 {
 	this->show_cursor = true;
-	this->cursor_clock = 0;
+	this->cursor_clock = SDL_GetTicks64();
 }
 
 void Console::HideCursor()
 {
 	this->show_cursor = false;
-	this->cursor_clock = 0;
+	this->cursor_clock = SDL_GetTicks64();
 }
 
 unsigned char Console::ReadChar(int x, int y)
 {
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h)
 		return 0;
-	return this->buffer[y * this->console_w + x];
+	return this->buffer[this->start_line * this->console_w + y * this->console_w + x];
 }
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
 	GPU_Clear(this->render_buffer->target);
-	uint64_t time = GetTickCount64();
+	uint64_t time = SDL_GetTicks64();
 	this->delta_time = time - this->prev_time;
 	/* Enable text shader */
 	GPU_ActivateShaderProgram(this->text_shader_id, &this->text_shader_block);
@@ -311,10 +336,11 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		{
 			int xcur = (x * this->font_w);
 			int ycur = (y * this->font_h);
-			unsigned char c = this->buffer[y * this->console_w + x];
+			unsigned char c = this->buffer[start_line * this->console_w + y * this->console_w + x];
+			unsigned char attrib = this->attrib_buffer[start_line * this->console_w + y * this->console_w + x];
 			/* Lower 4 bits = text color, higher 4 bits = background color */
-			int text_color = this->attrib_buffer[y * this->console_w + x] & 0xF;
-			int back_color = (this->attrib_buffer[y * this->console_w + x] & 0xF0) >> 4;
+			int text_color = attrib & 0x0F;
+			int back_color = (attrib & 0xF0) >> 4;
 			/* If its backcolor, don't draw, we already pass back color to the shader */
 			if (back_color != this->default_back_color)
 			{
@@ -326,8 +352,9 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 			GPU_Blit(this->char_blocks[c], NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
 		}
 	}
-	/* Draw the cursor */
-	if (this->show_cursor)
+
+	/* Draw the cursor, if we are not scrolling */
+	if (this->show_cursor && this->start_line == this->last_line)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
 		GPU_Blit(this->char_blocks[219], NULL, this->render_buffer->target, this->cursor_x * this->font_w + font_w / 2, this->cursor_y * this->font_h + font_h / 2);
@@ -343,15 +370,11 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		}
 	}
 
-	/* 
-	Now apply the CRT effect shader 
-	The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise. 
-	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 	float resolution[2] = { (float)t->w, (float)t->h };
 	/* Set shader parameters */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
-	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), (float)time/1000.0);
+	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), ((float)SDL_GetTicks64())/ 1000.0);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
 	/* Pass the back color to give the glow accent */
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "back_color"), 3, 1, this->color_scheme[this->default_back_color].returnArray());
@@ -360,6 +383,20 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
+
+	/* Draw the scroll bar */
+	if (start_line != last_line)
+	{
+		GPU_Rect scrollbar;
+		scrollbar.h = (((float)this->console_h) / ((float)this->last_line + this->console_h)) * (t->h - TITLE_BAR_HEIGHT);
+		scrollbar.y = TITLE_BAR_HEIGHT + scrollbar.h * 0.5 * ((float)this->start_line / (float)(this->last_line + 1.0));
+		scrollbar.w = SCROLL_BAR_WIDTH;
+		scrollbar.x = t->w - SIDES_WIDTH - SCROLL_BAR_WIDTH;
+		GPU_RectangleFilled2(t, scrollbar, SDL_Color{ 100, 100, 100, 255 });
+	}
+	/*
+	Now apply the CRT effect shader
+	The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
 
 	/* This constant is used for the burn in effect clock */
 	this->prev_time = time;

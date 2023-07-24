@@ -32,25 +32,27 @@ CustomTitleBar::CustomTitleBar(GPU_Target* screen) : UIElement()
 }
 void CustomTitleBar::Render()
 {
-    /* Draw icon, 32x32 */
+    /* Draw icon */
     GPU_Blit(this->icon, NULL, this->screen, TITLE_BAR_ICON_SIZE / 2, TITLE_BAR_ICON_SIZE / 2);
 
+    /* Draw the window text */
     ImGui::SetNextWindowPos(ImVec2(32, 0));
     ImGui::SetNextWindowSize(ImVec2(this->resolution_x, TITLE_BAR_HEIGHT));
     ImGui::Begin("##title", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
-    static ImGuiTextBuffer title {};
-    title.clear();
+    ImGuiTextBuffer title {};
     title.append(SDL_GetWindowTitle(this->window));
     ImGui::TextUnformatted(title.begin(), title.end());
     ImGui::PopStyleColor();
     ImGui::End();
 
+    /* Draw the window buttons */
     ImGui::SetNextWindowPos(ImVec2(this->resolution_x - TITLE_BAR_ICON_SIZE * 3, 0));
     ImGui::SetNextWindowSize(ImVec2(TITLE_BAR_ICON_SIZE * 3, TITLE_BAR_HEIGHT));
     ImGui::Begin("##Window_Buttons", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 255));
     
+    /* Minimize button */
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(128, 128, 0, 255));
     if (ImGui::Button(" _ "))
     {
@@ -60,12 +62,14 @@ void CustomTitleBar::Render()
 
     ImGui::SameLine();
 
+    /* TODO: Maximize button doesn't do anything. */
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 128, 0, 255));
     ImGui::Button(" = ");
     ImGui::PopStyleColor();
 
     ImGui::SameLine();
 
+    /* Unicode 'X', the close button */
     ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(128, 0, 0, 255));
     if (ImGui::Button(" \xC3\x97 "))
     {

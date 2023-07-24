@@ -64,6 +64,8 @@ public:
 	int console_resolution_x, console_resolution_y;
 	int default_fore_color, default_back_color;
 	int blink_interval;
+	int start_line, last_line; 
+	int maxlines = 1000;
 	std::string bell_wave_file;
 
 	Console(CRTermConfiguration*);
@@ -82,6 +84,8 @@ public:
 	void HideCursor();
 	void PlayBell();
 	void ClearExt(int fromx, int fromy, int tox, int toy);
+	void HistoryUp();
+	void HistoryDown();
 	/* The 256 letters glyphs extracted from the font image */
 	GPU_Image* char_blocks[256];
 

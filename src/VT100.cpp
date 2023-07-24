@@ -139,7 +139,7 @@ void VT100::VT100Take(unsigned char c)
 		{
 			parser_state = VTSTATE_NORMAL;
 			// Set the window title to 0 string
-			std::string window_title = "CRTerm - " + control_strings[0];
+			std::string window_title = "Gautam's CRTerm - " + control_strings[0];
 			SDL_SetWindowTitle(this->sdl_window, window_title.c_str());
 		}
 		else
@@ -316,7 +316,7 @@ void VT100::VT100Take(unsigned char c)
 				}
 				break;
 			case 'm':
-				/* Set colour */
+				/* Special graphics attributes */
 				for (int i = 0; i < stack_ptr; i++)
 				{
 					if (argument_stack[i].empty || argument_stack[i].value == 0)
@@ -335,6 +335,11 @@ void VT100::VT100Take(unsigned char c)
 							if(this->bg != con->default_back_color)
 								this->bg |= 8;
 						}
+						/* Swap bg and fg */
+						else if (attr == 7 || attr == 27)
+						{
+							std::swap(this->bg, this->fg);
+						}
 						/* FG is between 30-37 */
 						else if (attr >= 30 && attr <= 37)
 						{
@@ -345,18 +350,16 @@ void VT100::VT100Take(unsigned char c)
 						{
 							this->bg = (attr - 40) % 8;
 						}
-
 						/* 39 and 49 set default fg and bg */
-						if (attr == 39)
+						else if (attr == 39)
 						{
 							this->fg = con->default_fore_color;
 						}
-
 						else if (attr == 49)
 						{
 							this->bg = con->default_back_color;
 						}
-
+						/* Beginning of ISO 8613 sequences */
 						else if (attr == 38)
 						{
 							if (i < VT100_ARG_STACK_SIZE - 1)
@@ -389,6 +392,29 @@ void VT100::VT100Take(unsigned char c)
 								}
 							}
 						}
+						/* 90-97: Set bright FG */
+						else if (attr >= 90 && attr <= 97)
+						{
+							this->fg = (attr - 90);
+							this->fg |= 8;
+						}
+						/* 100 - 107 set bright BG */
+						else if (attr >= 100 && attr <= 107)
+						{
+							this->bg = (attr - 90);
+							if(this->bg != this->con->default_back_color)
+								this->bg |= 8;
+						}
+						/* Normal intensity */
+						else if (attr == 22)
+						{
+							this->fg &= 7;
+							this->bg &= 7;
+						}
+						else
+						{
+							std::cout << "Unhandled SGR attribute: " << attr << std::endl;
+						}
 					}
 				}
 				break;
@@ -398,20 +424,6 @@ void VT100::VT100Take(unsigned char c)
 				{
 					std::string term_info = "\x1B[" + std::to_string(con->cursor_y + 1) + ';' + std::to_string(con->cursor_x + 1) + 'R';
 					WriteFile(this->toProgram, term_info.c_str(), term_info.length(), NULL, NULL);
-				}
-				break;
-			case 'S':
-				/* Scroll Up */
-				if (argument_stack[0].empty)
-				{
-					con->Scroll();
-				}
-				else
-				{
-					for (int i = 0; i < argument_stack[0].value; i++)
-					{
-						con->Scroll();
-					}
 				}
 				break;
 			case 'X':
@@ -460,17 +472,20 @@ void VT100::VT100Take(unsigned char c)
 			/* CSI ? 25 l Hide cursor */
 			if (this->argument_stack[0].value == 25)
 			{
-				con->HideCursor();
+				con->ShowCursor();
 			}
-			/* CST ? 2004 h Turn OFF bracketed paste */
-if (this->argument_stack[0].value == 2004)
-{
-	this->bracketed_mode = false;
-}
-break;
+			/* CST ? 2004 l Turn OFF bracketed paste */
+			if (this->argument_stack[0].value == 2004)
+			{
+				this->bracketed_mode = false;
+			}
+			break;
 		case '$':
 			/* CSI ? ARGS $p - Unimplemented */
 			parser_state = VTSTATE_IGNORE_NEXT;
+			break;
+		default:
+			std::cout << "Unimplemented parser sequence: " << c << std::endl;
 			break;
 		}
 		if (parser_state != VTSTATE_IGNORE_NEXT)
@@ -534,6 +549,12 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 			getConsoleMouseCoords(&(this->selected_end_x), &(this->selected_end_y));
 		}
 		break;
+	case SDL_MOUSEWHEEL:
+		if (ev.wheel.y > 0)
+			this->con->HistoryUp();
+		else
+			this->con->HistoryDown();
+		break;
 	case SDL_MOUSEBUTTONUP:
 		if (ev.button.button == SDL_BUTTON_LEFT)
 		{
@@ -555,6 +576,11 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	default:
 		break;
 	}
+}
+/* Send characters to the terminal */
+void VT100::VT100Send(std::string sequence)
+{
+	WriteFile(this->toProgram, sequence.c_str(), sequence.length(), NULL, NULL);
 }
 
 void VT100::VT100Render(void)
