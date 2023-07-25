@@ -13,10 +13,10 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 | -------------  | ------------------ | -----------   |
 |![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
 
-### With curvature enabled (experimental feature)
+<b>With curvature enabled (experimental feature)</b>
 ![](images/crterm-curvature-enabled.png)
 
-### Neofetch
+<b>Neofetch</b>
 ![](images/show.gif)
 
 ## Motivation
