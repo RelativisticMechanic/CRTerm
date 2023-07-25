@@ -80,17 +80,6 @@ void ConfigEditor::Render(void)
     ImGui::SameLine();
     ImGui::InputText("##crt_shader", &(cfg->shader_path_crt));
 
-    ImGui::Text("Bell Sound");
-    ImGui::SameLine();
-    ImGui::InputText("##bell_sound", &(cfg->bell_sound));
-    ImGui::SameLine();
-    if (ImGui::Button("...##browse_bell"))
-    {
-        auto selection = pfd::open_file("Select a file").result();
-        if (!selection.empty())
-            this->cfg->bell_sound = selection[0];
-    }
-
     ImGui::Text("Shell Command");
     ImGui::SameLine();
     ImGui::InputText("##shell_cmd", &(cfg->shell_command));

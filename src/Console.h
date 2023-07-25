@@ -86,10 +86,6 @@ public:
 	bool is_selected;
 	int selected_start_x = 0, selected_start_y = 0;
 	int selected_end_x = 0, selected_end_y = 0;
-	/*
-		Stores audio data for the bell sound.
-	*/
-	std::string bell_wave_file;
 
 	Console(CRTermConfiguration*);
 	void PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color);

@@ -9,9 +9,15 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 
 <b>Note: This is a WIP, it is not ready for production!</b>
 
-| NeoFetch | Amber with WSL | Green with cmd.exe | Config Editor |
-| -------- | -------------  | ------------------ | -----------   |
-|![](images/show.gif)|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
+| Amber with WSL | Green with cmd.exe | Config Editor |
+| -------------  | ------------------ | -----------   |
+|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
+
+### With curvature enabled (experimental feature)
+![](images/crterm-curvature-enabled.png)
+
+### Neofetch
+![](images/show.gif)
 
 ## Motivation
 

@@ -443,6 +443,9 @@
     <ClInclude Include="ArgumentParser.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CRTerm.rc">

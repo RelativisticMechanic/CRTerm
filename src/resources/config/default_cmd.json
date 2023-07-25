@@ -8,7 +8,6 @@
     "background": "crt.png",
     "text_shader": "shaders/text",
     "crt_shader": "shaders/crt",
-    "bell": "bell.wav",
     "crt_warp": 0.0,
     "shell_command": "cmd /K \"cd %userprofile%\"",
     "blink_interval": 300,

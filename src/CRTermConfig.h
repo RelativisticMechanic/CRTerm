@@ -29,7 +29,6 @@ public:
 	std::string crt_background_image;
 	std::string shader_path_text;
 	std::string shader_path_crt;
-	std::string bell_sound;
 	std::string shell_command;
 	int font_width;
 	int font_height;

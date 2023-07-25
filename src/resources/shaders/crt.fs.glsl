@@ -18,7 +18,7 @@ const float flicker_fraction = 0.15;
 // Theme settings
 uniform vec3 back_color;
 const float background_brightness = 0.25;
-const float crt_noise_fraction = 0.1;
+const float crt_noise_fraction = 0.15;
 
 // CRT Effect settings
 uniform float warp; 
@@ -85,9 +85,12 @@ void main(void)
     uv.y -= 0.5; uv.y *= 1.0 + (dc.x * (0.3 * warp)); uv.y += 0.5;
 
     // sample inside boundaries, otherwise set to transparent
+    float distance_from_center = length(uv - vec2(0.5, 0.5));
+
     if (uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0)
     {
-        fragColor = vec4(0.0,0.0,0.0,1.0);
+        if(warp > 0)
+            fragColor = mix(vec4(0.0,0.0,0.0,1.0), vec4(0.2,0.2,0.2,1.0), pow(distance_from_center + 0.20, 40.0));
     }
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
@@ -97,5 +100,7 @@ void main(void)
         fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin((uv.y - abs(cos(scanline_speed*time)))))) * back_color;
         // Add noise
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
+        if(warp > 0.0)
+            fragColor.rgb = mix(fragColor.rgb, vec3(0.0, 0.0, 0.0), 0.9*pow(distance_from_center + 0.25, 3.0));
     }
 }

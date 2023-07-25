@@ -41,7 +41,6 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		this->crt_background_image = configuration_data.at("background");
 		this->shader_path_text = configuration_data.at("text_shader");
 		this->shader_path_crt = configuration_data.at("crt_shader");
-		this->bell_sound = configuration_data.at("bell");
 		this->shell_command = configuration_data.at("shell_command");
 		this->blink_interval = configuration_data.at("blink_interval");
 		this->default_fore_color = configuration_data.at("default_fg");
@@ -100,7 +99,6 @@ void CRTermConfiguration::Save(std::string filename)
 	output_json["crt_shader"] = this->shader_path_crt;
 
 	output_json["crt_shader"] = this->shader_path_crt;
-	output_json["bell"] = this->bell_sound;
 	output_json["shell_command"] = this->shell_command;
 	output_json["blink_interval"] = this->blink_interval;
 	output_json["default_fg"] = this->default_fore_color;

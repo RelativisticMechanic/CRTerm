@@ -77,7 +77,8 @@ public:
 		{ SDLK_RETURN, "\r" },
 		{ SDLK_RETURN2, "\r"},
 		{ SDLK_KP_ENTER, "\r" },
-		{ SDLK_BACKSPACE, "\b" },
+		/* TODO: cmd takes 0x7F instead of 0x08 as backspace. 0x08 on cmd clears the whole word. Weird. */
+		{ SDLK_BACKSPACE, "\x7F" },
 		{ SDLK_TAB, "\t" },
 		{ SDLK_ESCAPE, "\x1B" },
 		{ SDLK_UP, "\x1B[A" },

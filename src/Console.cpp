@@ -7,7 +7,6 @@
 
 #include "Console.h"
 #include "Shaders.h"
-#include "CustomTitleBar.h"
 
 Console::Console(CRTermConfiguration* cfg)
 {
@@ -37,14 +36,6 @@ Console::Console(CRTermConfiguration* cfg)
 	/* Load the font and the background image */
 	this->console_font = GPU_LoadImage(cfg->bitmap_font_file.c_str());
 	this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
-
-	/* Load the bell sound */
-	std::ifstream bell_file;
-	bell_file.open(cfg->bell_sound);
-
-	std::stringstream str_bell_stream;
-	str_bell_stream << bell_file.rdbuf();
-	this->bell_wave_file = str_bell_stream.str();
 
 	/* 
 	Now create 256 GPU_Targets each containing
@@ -216,19 +207,17 @@ void Console::SetCursor(int x, int y)
 
 void Console::SetCursorX(int x)
 {
-	this->cursor_x = x;
-	this->LimitCursor();
+	this->SetCursor(x, this->cursor_y);
 }
 
 void Console::SetCursorY(int y)
 {
-	this->cursor_y = y;
-	this->LimitCursor();
+	this->SetCursor(this->cursor_x, y);
 }
 
 void Console::PlayBell()
 {
-	PlaySoundA(this->bell_wave_file.c_str(), NULL, SND_MEMORY | SND_ASYNC);
+	PlaySoundA((LPCSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID | SND_ASYNC);
 }
 
 void Console::PutChar(unsigned char c) 
@@ -269,6 +258,7 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 		int n = 8 - (this->cursor_x % 8);
 		for (int i = 0; i < n; i++)
 		{
+			/* Don't exceed beyond screen width */
 			this->PutCharExt(' ', fore_color, back_color);
 		}
 	}
@@ -328,7 +318,7 @@ unsigned char Console::ReadChar(int x, int y)
 {
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h)
 		return 0;
-	return this->buffer[this->start_line * this->console_w + y * this->console_w + x];
+	return this->buffer[(this->start_line + y) * this->console_w + x];
 }
 
 /* The Console Render function, this is what makes the magic happen :) */
@@ -419,6 +409,8 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	/* 
 		We have now rendered the terminal to the local render buffer,
 		now we pass it through the CRT shader and scale it up.
+		Now apply the CRT effect shader
+		The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
 	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 	float resolution[2] = { (float)t->w, (float)t->h };
@@ -433,10 +425,6 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
-	/*
-	Now apply the CRT effect shader
-	The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
-
 	/* This constant is used for the burn in effect clock */
 	this->prev_time = time;
 }

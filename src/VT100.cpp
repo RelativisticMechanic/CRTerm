@@ -338,7 +338,7 @@ void VT100::VT100Take(unsigned char c)
 						/* Swap bg and fg */
 						else if (attr == 7 || attr == 27)
 						{
-							std::swap(this->bg, this->fg);
+							//std::swap(this->bg, this->fg);
 						}
 						/* FG is between 30-37 */
 						else if (attr >= 30 && attr <= 37)
@@ -419,7 +419,7 @@ void VT100::VT100Take(unsigned char c)
 				}
 				break;
 			case 'n':
-				/* Report terminal parameters */
+				/* CSI 6n Report terminal parameters */
 				if (argument_stack[0].value == 6)
 				{
 					std::string term_info = "\x1B[" + std::to_string(con->cursor_y + 1) + ';' + std::to_string(con->cursor_x + 1) + 'R';
@@ -434,7 +434,7 @@ void VT100::VT100Take(unsigned char c)
 				}
 				else
 				{
-					for (int i = 0; i < this->argument_stack[0].value; i++)
+					for (int i = 1; i < this->argument_stack[0].value; i++)
 					{
 						con->PlaceChar(con->cursor_x + i, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
 					}
