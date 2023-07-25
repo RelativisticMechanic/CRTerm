@@ -13,17 +13,26 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 | -------------  | ------------------ | -----------   |
 |![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
 
+<<<<<<< Updated upstream
 <b>With curvature enabled (experimental feature)</b>
 
 ![](images/crterm-curvature-enabled.png)
 
 <b>Neofetch</b>
 
+=======
+### With curvature enabled (experimental feature)
+![](images/crterm-curvature-enabled.png)
+
+### Neofetch
+>>>>>>> Stashed changes
 ![](images/show.gif)
 
 ## Motivation
 
-This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com/Swordfish90/cool-retro-term). Unfortunately, this program while being cool, was only available for Linux / MacOS, so I decided to write one for Windows.
+This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com/Swordfish90/cool-retro-term). Unfortunately, this program while being cool, was only available for Linux / MacOS, so I decided to write one for Windows. 
+
+Note that while it is inspired from Cool-Retro-Term, it is not Cool-Retro-Term! Cool-Retro-Term has undergone ~10 years of development and this does not use any code from that. This has gone about ~10 days in development in comparison. :P
 
 Watch it in [action](https://www.youtube.com/watch?v=kIuGYarFiT4).
 
