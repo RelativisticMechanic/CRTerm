@@ -27,7 +27,7 @@ This project is inspired from SwordFish90's [Cool-Retro-Term](https://github.com
 
 Note that <i>while it is inspired from Cool-Retro-Term, it is not Cool-Retro-Term!</i> Cool-Retro-Term has undergone ~10 years of development and this does not use any code from that. This has gone about ~10 days in development in comparison, so once again it is in active development and will see many changes. :P
 
-Watch it in [action](https://www.youtube.com/watch?v=kIuGYarFiT4).
+Watch it in [action](https://youtu.be/oOITpIzd7WM).
 
 ## Description
 
