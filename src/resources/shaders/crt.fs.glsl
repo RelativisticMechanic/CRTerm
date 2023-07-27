@@ -17,6 +17,7 @@ const float flicker_fraction = 0.15;
 
 // Theme settings
 uniform vec3 back_color;
+const vec4 frame_color = vec4(0.20, 0.21, 0.25, 1.0);
 const float background_brightness = 0.25;
 const float crt_noise_fraction = 0.15;
 
@@ -73,6 +74,15 @@ float crtNoise(vec2 pos, float evolve) {
     return fract(23.0*fract(2.0/fract(fract(cx*2.4/cy*23.0+pow(abs(cy/22.4),3.3))*fract(cx*evolve/pow(abs(cy),0.050)))));
 }
 
+vec3 vigenette(in vec2 uv, in vec3 oricol)
+{
+    uv *=  1.0 - uv.yx; 
+    float vig = uv.x*uv.y * 15.0;
+    
+    vig = pow(vig, 0.20);
+    return vig * oricol;
+}
+
 void main(void)
 {
     // squared distance from center
@@ -89,8 +99,7 @@ void main(void)
 
     if (uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0)
     {
-        if(warp > 0)
-            fragColor = mix(vec4(0.0,0.0,0.0,1.0), vec4(0.2,0.2,0.2,1.0), pow(distance_from_center + 0.20, 40.0));
+        fragColor = frame_color;
     }
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
@@ -100,7 +109,6 @@ void main(void)
         fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin((uv.y - abs(cos(scanline_speed*time)))))) * back_color;
         // Add noise
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
-        if(warp > 0.0)
-            fragColor.rgb = mix(fragColor.rgb, vec3(0.0, 0.0, 0.0), 0.9*pow(distance_from_center + 0.25, 3.0));
+        fragColor.rgb = vigenette(uv, fragColor.rgb);
     }
 }
