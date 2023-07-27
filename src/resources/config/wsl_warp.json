@@ -12,7 +12,7 @@
     "shell_command": "wsl.exe ~",
     "blink_interval": 300,
     "default_fg": 6,
-    "default_bg": 6,
+    "default_bg": 15,
     "maxlines": 1000,
 
     "color_scheme":

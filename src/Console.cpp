@@ -393,7 +393,9 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	if (this->show_cursor && this->start_line == this->last_line)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
-		GPU_Blit(this->char_blocks[219], NULL, this->render_buffer->target, this->cursor_x * this->font_w + font_w / 2, this->cursor_y * this->font_h + font_h / 2);
+		/* Cursor should be partially see-through */
+		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.85);
+		GPU_RectangleFilled(this->render_buffer->target, cursor_x * font_w, cursor_y * font_h, (cursor_x + 1) * font_w, (cursor_y + 1)  * font_h, SDL_Color{ 255, 255, 255, 255 });
 
 		/* Draw cursor shadow */
 		if (this->cursor_shadow_width > 0.0)

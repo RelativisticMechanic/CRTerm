@@ -8,7 +8,7 @@
     "background": "crt.png",
     "text_shader": "shaders/text",
     "crt_shader": "shaders/crt",
-    "crt_warp": 0.0,
+    "crt_warp": 0.85,
     "shell_command": "wsl.exe ~",
     "blink_interval": 300,
     "default_fg": 6,
