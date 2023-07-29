@@ -28,6 +28,7 @@ float scanline_speed = 0.5;
 float scanline_intensity = 0.15;
 float scanline_spread = 0.2;
 float vigenette_intensity = 0.25;
+float vignette_brightness = 50.0;
 
 // CRT Frame Settings
 float frameShadowCoeff = 15.0;
@@ -83,8 +84,8 @@ float crtNoise(vec2 pos, float evolve) {
 
 vec3 vigenette(in vec2 uv, in vec3 oricol)
 {
-    uv *=  1.0 - uv.yx; 
-    float vig = uv.x*uv.y * 15.0;
+
+    float vig = (uv.x*uv.y - uv.x*uv.x*uv.y - uv.x*uv.y*uv.y + uv.x*uv.x*uv.y*uv.y) * vignette_brightness;
     
     vig = pow(vig, vigenette_intensity);
     return vig * oricol;
