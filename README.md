@@ -9,9 +9,9 @@ A CRT style terminal for Windows (or more appropriately, a Windows take on cool-
 
 <b>Note: This is a WIP, it is not ready for production!</b>
 
-| Amber with WSL | Green with cmd.exe | Config Editor |
+| Amber with WSL | Green with cmd.exe | White with Powershell |
 | -------------  | ------------------ | -----------   |
-|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/cfg-editor.png) |
+|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) |
 
 <b>With curvature enabled (experimental feature)</b>
 
