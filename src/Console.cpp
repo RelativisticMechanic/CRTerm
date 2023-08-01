@@ -30,8 +30,8 @@ Console::Console(CRTermConfiguration* cfg)
 	this->default_fore_color = cfg->default_fore_color;
 	this->default_back_color = cfg->default_back_color;
 	/* Create the character and attribute buffers */
-	this->buffer = (unsigned char*)calloc(this->console_w * this->maxlines, sizeof(char));
-	this->attrib_buffer = (unsigned char*)calloc(this->console_w * this->maxlines, sizeof(char));
+	this->buffer = (ConsoleChar*)calloc(this->console_w * this->maxlines, sizeof(ConsoleChar));
+	this->attrib_buffer = (ConsoleChar*)calloc(this->console_w * this->maxlines, sizeof(ConsoleAttrib));
 
 	/* Load the font and the background image */
 	this->console_font = GPU_LoadImage(cfg->bitmap_font_file.c_str());
@@ -167,12 +167,12 @@ void Console::Scroll()
 	else
 	{
 		/* Scroll up by 1 line */
-		memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(char) * 1 * this->console_w), this->console_w * (this->maxlines - 1));
-		memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(char) * this->console_w), this->console_w * (this->maxlines - 1));
+		memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(ConsoleChar) * 1 * this->console_w), this->console_w * (this->maxlines - 1));
+		memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(ConsoleAttrib) * this->console_w), this->console_w * (this->maxlines - 1));
 	}
 	/* Empty last line */
-	memset((void*)((uintptr_t)this->buffer + sizeof(char) * (this->start_line + this->console_h - 1) * this->console_w), ' ', this->console_w);
-	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(char) * (this->start_line + this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
+	memset((void*)((uintptr_t)this->buffer + sizeof(ConsoleChar) * (this->start_line + this->console_h - 1) * this->console_w), ' ', this->console_w);
+	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(ConsoleAttrib) * (this->start_line + this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
 	this->cursor_y -= 1;
 	this->cursor_x = 0;
 	last_line = start_line;
@@ -220,12 +220,12 @@ void Console::PlayBell()
 	PlaySoundA((LPCSTR)SND_ALIAS_SYSTEMASTERISK, NULL, SND_ALIAS_ID | SND_ASYNC);
 }
 
-void Console::PutChar(unsigned char c) 
+void Console::PutChar(ConsoleChar c) 
 {
 	Console::PutCharExt(c, this->default_fore_color, this->default_back_color);
 }
 
-void Console::PutCharExt(unsigned char chr, int fore_color, int back_color)
+void Console::PutCharExt(ConsoleChar chr, int fore_color, int back_color)
 {
 	uint8_t c = (uint8_t)chr;
 	if (c == '\n')
@@ -292,7 +292,7 @@ void Console::PutCharExt(unsigned char chr, int fore_color, int back_color)
 	}
 }
 
-void Console::PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color)
+void Console::PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_color)
 {
 	start_line = last_line;
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h) return;
@@ -330,7 +330,7 @@ void Console::DisableWrapAround()
 	this->wrap_around = false;
 }
 
-unsigned char Console::ReadChar(int x, int y)
+ConsoleChar Console::ReadChar(int x, int y)
 {
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h)
 		return 0;
@@ -359,8 +359,8 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		{
 			int xcur = (x * this->font_w);
 			int ycur = (y * this->font_h);
-			unsigned char c = this->buffer[start_line * this->console_w + y * this->console_w + x];
-			unsigned char attrib = this->attrib_buffer[start_line * this->console_w + y * this->console_w + x];
+			ConsoleChar c = this->buffer[start_line * this->console_w + y * this->console_w + x];
+			ConsoleAttrib attrib = this->attrib_buffer[start_line * this->console_w + y * this->console_w + x];
 			/* Lower 4 bits = text color, higher 4 bits = background color */
 			int text_color = attrib & 0x0F;
 			int back_color = (attrib & 0xF0) >> 4;

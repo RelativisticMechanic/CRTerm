@@ -27,6 +27,13 @@
 
 #define CONSTRUCT_ATTRIBUTE(fcol,bcol) (((bcol) << 4) | (fcol))
 
+/*
+	In future when we implement UTF-8
+*/
+
+typedef unsigned char ConsoleChar;
+typedef unsigned char ConsoleAttrib;
+
 class ConsoleColor
 {
 private:
@@ -58,8 +65,8 @@ class Console
 {
 public:
 	/* TODO: Some of these are better of in private. */
-	unsigned char* buffer;
-	unsigned char* attrib_buffer;
+	ConsoleChar* buffer;
+	ConsoleAttrib* attrib_buffer;
 	/* Character-wise resolution of the console */
 	int console_w, console_h;
 	GPU_Image* console_font;
@@ -91,10 +98,10 @@ public:
 	bool wrap_around = true;
 
 	Console(CRTermConfiguration*);
-	void PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color);
+	void PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_color);
 	unsigned char ReadChar(int x, int y);
-	void PutCharExt(unsigned char c, int fore_color, int back_color);
-	void PutChar(unsigned char c);
+	void PutCharExt(ConsoleChar c, int fore_color, int back_color);
+	void PutChar(ConsoleChar c);
 	void Puts(std::string s);
 	void Clear();
 	void Scroll();
