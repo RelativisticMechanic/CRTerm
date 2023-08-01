@@ -108,6 +108,8 @@ public:
 	void ClearExt(int fromx, int fromy, int tox, int toy);
 	void HistoryUp();
 	void HistoryDown();
+	void EnableWrapAround();
+	void DisableWrapAround();
 	void SetSelection(bool selection, int start_x=0, int start_y=0, int end_x=0, int end_y=0);
 	/* The 256 letters glyphs extracted from the font image */
 	GPU_Image* char_blocks[256];

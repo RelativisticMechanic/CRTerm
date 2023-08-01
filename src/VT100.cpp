@@ -253,7 +253,7 @@ void VT100::VT100Take(unsigned char c)
 			case 'H':
 			case 'f':
 				/* Move cursor to row n, column m, 1-indexed */
-				if (stack_ptr == 1 && argument_stack[stack_ptr].empty)
+				if (stack_ptr <= 1 && argument_stack[stack_ptr].empty)
 				{
 					con->SetCursor(0, 0);
 				}
@@ -437,9 +437,10 @@ void VT100::VT100Take(unsigned char c)
 					std::string term_info = "\x1B[" + std::to_string(con->cursor_y + 1) + ';' + std::to_string(con->cursor_x + 1) + 'R';
 					WriteFile(this->toProgram, term_info.c_str(), term_info.length(), NULL, NULL);
 				}
+				/* ESC 0n - Report status terminal status */
 				else if (argument_stack[0].value == 5)
 				{
-					/* Report status OK */
+					// Report OK.
 					std::string status_ok = "\x1B[0n";
 					WriteFile(this->toProgram, status_ok.c_str(), status_ok.length(), NULL, NULL);
 				}
@@ -488,10 +489,10 @@ void VT100::VT100Take(unsigned char c)
 			{
 				this->bracketed_mode = true;
 			}
+			/* CSI ? 7 h DEC WrapAround Enable */
 			else if (this->argument_stack[0].value == 7)
 			{
-				/* DEC WrapAround Enable */
-				con->wrap_around = true;
+				con->EnableWrapAround();
 			}
 			else
 			{
@@ -509,10 +510,10 @@ void VT100::VT100Take(unsigned char c)
 			{
 				this->bracketed_mode = false;
 			}
+			/* CSI ? 7 l DEC WrapAround Disable */
 			else if (this->argument_stack[0].value == 7)
 			{
-				/* DEC WrapAround Disable */
-				con->wrap_around = false;
+				con->DisableWrapAround();
 			}
 			else
 			{

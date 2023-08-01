@@ -225,9 +225,9 @@ void Console::PutChar(unsigned char c)
 	Console::PutCharExt(c, this->default_fore_color, this->default_back_color);
 }
 
-void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
+void Console::PutCharExt(unsigned char chr, int fore_color, int back_color)
 {
-	uint8_t chr = (uint8_t)c;
+	uint8_t c = (uint8_t)chr;
 	if (c == '\n')
 	{
 		this->cursor_y += 1;
@@ -264,24 +264,25 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 	}
 	else
 	{
-		this->PlaceChar(this->cursor_x, this->cursor_y, chr, fore_color, back_color);
+		/* Wrap around */
+		if (this->cursor_x >= this->console_w)
+		{
+			if (this->wrap_around)
+			{
+				this->cursor_x = 0;
+				this->cursor_y += 1;
+			}
+			else
+			{
+				while (!(this->cursor_x < this->console_w))
+					this->cursor_x -= 1;
+			}
+		}
+
+		this->PlaceChar(this->cursor_x, this->cursor_y, c, fore_color, back_color);
 		/* Set cursor shadow, this is what creates the cursor "burn in" effect */
 		this->cursor_shadow_width = this->font_w * 2;
-		this->cursor_x += 1;
-	}
-
-	/* Wrap around */
-	if (this->cursor_x >= this->console_w)
-	{
-		if (this->wrap_around)
-		{
-			this->cursor_x = 0;
-			this->cursor_y += 1;
-		}
-		else
-		{
-			this->cursor_x--;
-		}
+		this->cursor_x++;
 	}
 
 	if (this->cursor_y >= this->console_h)
@@ -289,10 +290,6 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 		while(!(this->cursor_y < this->console_h))
 			this->Scroll();
 	}
-
-	/* Keep cursor in bounds */
-	this->LimitCursor();
-
 }
 
 void Console::PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color)
@@ -321,6 +318,16 @@ void Console::HideCursor()
 {
 	this->show_cursor = false;
 	this->cursor_clock = SDL_GetTicks64();
+}
+
+void Console::EnableWrapAround()
+{
+	this->wrap_around = true;
+}
+
+void Console::DisableWrapAround()
+{
+	this->wrap_around = false;
 }
 
 unsigned char Console::ReadChar(int x, int y)
