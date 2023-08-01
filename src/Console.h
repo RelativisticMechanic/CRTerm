@@ -87,6 +87,9 @@ public:
 	int selected_start_x = 0, selected_start_y = 0;
 	int selected_end_x = 0, selected_end_y = 0;
 
+	/* Wrap Around (DECAWM) */
+	bool wrap_around = true;
+
 	Console(CRTermConfiguration*);
 	void PlaceChar(int x, int y, unsigned char c, int fore_color, int back_color);
 	unsigned char ReadChar(int x, int y);

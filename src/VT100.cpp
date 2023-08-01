@@ -88,6 +88,18 @@ void VT100::VT100Take(unsigned char c)
 				control_strings[i] = "";
 			}
 		}
+		else if (c == '>')
+		{
+			/* ESC >: Exit alternate keypad mode */
+			this->alternate_keypad_mode = false;
+			parser_state = VTSTATE_NORMAL;
+		}
+		else if (c == '=')
+		{
+			/* ESC =: Enter alternate keypad mode */
+			this->alternate_keypad_mode = true;
+			parser_state = VTSTATE_NORMAL;
+		}
 		else
 		{
 			std::cout << "Unexpected identifier after VT_ESCAPE: " << c << std::endl;
@@ -425,16 +437,26 @@ void VT100::VT100Take(unsigned char c)
 					std::string term_info = "\x1B[" + std::to_string(con->cursor_y + 1) + ';' + std::to_string(con->cursor_x + 1) + 'R';
 					WriteFile(this->toProgram, term_info.c_str(), term_info.length(), NULL, NULL);
 				}
+				else if (argument_stack[0].value == 5)
+				{
+					/* Report status OK */
+					std::string status_ok = "\x1B[0n";
+					WriteFile(this->toProgram, status_ok.c_str(), status_ok.length(), NULL, NULL);
+				}
+				break;
+			/* ESC [0c or ESC c: Report terminal version. We report as VT100 */
+			case 'c':
+				WriteFile(this->toProgram, "\x1B[?;0c", strlen("\x1B[?;0c"), NULL, NULL);
 				break;
 			case 'X':
 				/* Erase n chars to the right */
 				if (argument_stack[0].empty)
 				{
-					con->PlaceChar(con->cursor_x + 1, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
+					con->PlaceChar(con->cursor_x, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
 				}
 				else
 				{
-					for (int i = 1; i < this->argument_stack[0].value; i++)
+					for (int i = 0; i < this->argument_stack[0].value; i++)
 					{
 						con->PlaceChar(con->cursor_x + i, con->cursor_y, ' ', con->default_fore_color, con->default_back_color);
 					}
@@ -444,7 +466,6 @@ void VT100::VT100Take(unsigned char c)
 				parser_state = VTSTATE_IGNORE_NEXT;
 				break;
 			default:
-				std::cout << "Unimplemented sequence: " << c << std::endl;
 				break;
 			}
 			if(parser_state != VTSTATE_IGNORE_NEXT)
@@ -463,9 +484,18 @@ void VT100::VT100Take(unsigned char c)
 				con->ShowCursor();
 			}
 			/* CST ? 2004 h Turn ON bracketed paste */
-			if (this->argument_stack[0].value == 2004)
+			else if (this->argument_stack[0].value == 2004)
 			{
 				this->bracketed_mode = true;
+			}
+			else if (this->argument_stack[0].value == 7)
+			{
+				/* DEC WrapAround Enable */
+				con->wrap_around = true;
+			}
+			else
+			{
+				std::cout << "Unimplemented ON: " << this->argument_stack[0].value << std::endl;
 			}
 			break;
 		case 'l':
@@ -475,9 +505,18 @@ void VT100::VT100Take(unsigned char c)
 				con->ShowCursor();
 			}
 			/* CST ? 2004 l Turn OFF bracketed paste */
-			if (this->argument_stack[0].value == 2004)
+			else if (this->argument_stack[0].value == 2004)
 			{
 				this->bracketed_mode = false;
+			}
+			else if (this->argument_stack[0].value == 7)
+			{
+				/* DEC WrapAround Disable */
+				con->wrap_around = false;
+			}
+			else
+			{
+				std::cout << "Unimplemented OFF: " << this->argument_stack[0].value << std::endl;
 			}
 			break;
 		case '$':
@@ -485,7 +524,7 @@ void VT100::VT100Take(unsigned char c)
 			parser_state = VTSTATE_IGNORE_NEXT;
 			break;
 		default:
-			std::cout << "Unimplemented parser sequence: " << c << std::endl;
+			std::cout << "Unimplemented private sequence: " << c << std::endl;
 			break;
 		}
 		if (parser_state != VTSTATE_IGNORE_NEXT)

@@ -20,6 +20,7 @@
 #include "ConfigSelector.h"
 #include "ContextMenu.h"
 #include "ArgumentParser.h"
+#include "CRTerm.h"
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
@@ -106,6 +107,9 @@ int main(int argc, char* argv[])
 	
 	int mouse_x = 0, mouse_y = 0;
 	SDL_GetMouseState(&mouse_x, &mouse_y);
+
+	uint64_t prev_timer = SDL_GetTicks64();
+	uint64_t timer = SDL_GetTicks64();
 	while (!done)
 	{
 		while (SDL_PollEvent(&ev))
@@ -141,6 +145,13 @@ int main(int argc, char* argv[])
 		/* Then the UI */
 		UI->Render();
 		GPU_Flip(screen);
+
+		if (timer - prev_timer < (1000 / FRAMES_PER_SEC))
+		{
+			SDL_Delay((1000 / FRAMES_PER_SEC) - (timer - prev_timer));
+		}
+		prev_timer = timer;
+		timer = SDL_GetTicks64();
 	}
 	SDL_Quit();
 	return 0;

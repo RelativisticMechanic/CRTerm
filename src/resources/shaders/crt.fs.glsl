@@ -64,11 +64,10 @@ vec4 crtGlow(in vec2 uv)
     sum += texture(tex, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;
     sum += texture(tex, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;
 
-    vec4 result = sum * (intensity + flicker_fraction * intensity *sin(time*speed)) + texture(tex, texcoord);
+    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*speed)) + texture(tex, texcoord);
     
     return result;
 }
-
 float crtNoise(vec2 pos, float evolve) {
     
     // Loop the evolution (over a very long period of time).

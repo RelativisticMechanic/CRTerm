@@ -270,10 +270,18 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 		this->cursor_x += 1;
 	}
 
-	if (this->cursor_x >= this->console_w && this->cursor_y < this->console_h - 1)
+	/* Wrap around */
+	if (this->cursor_x >= this->console_w)
 	{
-		this->cursor_x = 0;
-		this->cursor_y += 1;
+		if (this->wrap_around)
+		{
+			this->cursor_x = 0;
+			this->cursor_y += 1;
+		}
+		else
+		{
+			this->cursor_x--;
+		}
 	}
 
 	if (this->cursor_y >= this->console_h)
@@ -282,6 +290,7 @@ void Console::PutCharExt(unsigned char c, int fore_color, int back_color)
 			this->Scroll();
 	}
 
+	/* Keep cursor in bounds */
 	this->LimitCursor();
 
 }
