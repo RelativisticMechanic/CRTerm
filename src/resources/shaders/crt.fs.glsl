@@ -10,9 +10,9 @@ uniform float time;
 uniform vec2 resolution;
 
 // Glow effect settings
-const float blurSize = 1.0/512.0;
+const float blurSizeDefault = 1.0/512.0;
 const float intensity = 1.0;
-const float speed = 20.0;
+const float speed = 30.0;
 const float flicker_fraction = 0.15;
 
 // Theme settings
@@ -37,7 +37,7 @@ vec2 margin = vec2(0.03, 0.03);
 
 
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
-vec4 crtGlow(in vec2 uv)
+vec4 crtGlow(in vec2 uv, in float blurSize)
 {
     vec4 sum = vec4(0);
     vec2 texcoord = uv.xy;
@@ -94,6 +94,10 @@ vec3 vigenette(in vec2 uv, in vec3 oricol)
     The following code was borrowed from Cool-Retro-Term.
     It creates a nice frame around the terminal screen.
 */
+float rand(vec2 co)
+{
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
 
 float max2(vec2 v)
 {
@@ -139,6 +143,17 @@ vec4 crtFrame(in vec2 staticCoords, in vec2 uv)
 
     float screenShadow = 1.0 - prod2(positiveLog(coords * screenShadowCoeff + vec2(1.0)) * positiveLog(-coords * screenShadowCoeff + vec2(screenShadowCoeff + 1.0)));
     alpha = max(0.8 * screenShadow, alpha);
+
+    /* Calculate normal vector to the center */
+    vec2 normal = staticCoords - vec2(0.4, 0.4);
+    normal = normal / length(normal);
+
+    /* Sample glow + blur for a decent reflection of the content on frame */
+    for(int i = 0; i < 10; i++)
+    {
+        color = mix(color, crtGlow(staticCoords - (i/256.0)*normal, 1/256.0).rgb, 0.01);
+    }
+
     return vec4(color*alpha, alpha);
 }
 
@@ -161,7 +176,7 @@ void main(void)
     }
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
-    	fragColor = vec4(mix(crtGlow(uv).rgb, vec3(0.0),apply),1.0);
+    	fragColor = vec4(mix(crtGlow(uv, blurSizeDefault).rgb, vec3(0.0),apply),1.0);
         fragColor = vec4(mix(fragColor.rgb, length(texture(crt_background, uv).rgb)*back_color, background_brightness),1.0);
         /* Add a scanline going up and down */
         fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin((uv.y - abs(cos(scanline_speed*time)))))) * back_color;

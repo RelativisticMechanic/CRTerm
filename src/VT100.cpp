@@ -104,7 +104,6 @@ void VT100::VT100Take(unsigned char c)
 		{
 			std::cout << "Unexpected identifier after VT_ESCAPE: " << c << std::endl;
 			parser_state = VTSTATE_NORMAL;
-			//VT100Putc(c);
 		}
 		break;
 	case VTSTATE_ATTR:
@@ -489,10 +488,20 @@ void VT100::VT100Take(unsigned char c)
 			{
 				this->bracketed_mode = true;
 			}
-			/* CSI ? 7 h DEC WrapAround Enable */
+			/* CSI ? 2 h DEC Turn ON disabled keyboard input */
+			else if (this->argument_stack[0].value == 2)
+			{
+				this->keyboard_disabled = true;
+			}
+			/* CSI ? 7 h DEC Turn ON wraparound */
 			else if (this->argument_stack[0].value == 7)
 			{
 				con->EnableWrapAround();
+			}
+			/* CSI ? 12 h DEC Turn ON Send-Receive Mode */
+			else if (this->argument_stack[0].value == 12)
+			{
+				// IGNORE.
 			}
 			else
 			{
@@ -510,10 +519,20 @@ void VT100::VT100Take(unsigned char c)
 			{
 				this->bracketed_mode = false;
 			}
-			/* CSI ? 7 l DEC WrapAround Disable */
+			/* CSI ? 2 l DEC Turn OFF Keyboard Disable */
+			else if (this->argument_stack[0].value == 2)
+			{
+				this->keyboard_disabled = false;
+			}
+			/* CSI ? 7 l DEC Turn OFF Wrap Around */
 			else if (this->argument_stack[0].value == 7)
 			{
 				con->DisableWrapAround();
+			}
+			/* CSI ? 12 l DEC Turn OFF Send-Receive Mode */
+			else if (this->argument_stack[0].value == 12)
+			{
+				// IGNORE.
 			}
 			else
 			{
@@ -543,11 +562,17 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	switch (ev.type)
 	{
 	case SDL_TEXTINPUT:
-		/* Send text input as is, SDLs text input is ASCII compliant */
-		WriteFile(this->toProgram, &(ev.text.text[0]), 1, NULL, NULL);
+		if (!keyboard_disabled)
+		{
+			/* Send text input as is, SDLs text input is ASCII compliant */
+			WriteFile(this->toProgram, &(ev.text.text[0]), 1, NULL, NULL);
+		}
 		break;
 	case SDL_KEYDOWN:
-		/* Send special keys */
+		if (keyboard_disabled)
+			break;
+
+		/* Send special keys */ 
 		if (special_key_map.find((int)ev.key.keysym.sym) != special_key_map.end())
 		{
 			std::string ansi_sequence = special_key_map[(int)ev.key.keysym.sym];
@@ -559,16 +584,17 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 			this->CTRL_down = true;
 		}
 
-		/* If CTRL is down WITH C... send break. */
+		/* If CTRL is down... send the relevant sequence. */
 		if (this->CTRL_down)
 		{
-			if (ev.key.keysym.sym == SDLK_c)
+			if (control_key_map.find((int)ev.key.keysym.sym) != control_key_map.end())
 			{
-				const char brk_char = '\x3';
-				WriteFile(this->toProgram, &brk_char, 1, NULL, NULL);
+				std::string control_sequence = control_key_map[(int)ev.key.keysym.sym];
+				WriteFile(this->toProgram, control_sequence.c_str(), control_sequence.length(), NULL, NULL);
 			}
 		}
 		break;
+
 	case SDL_KEYUP:
 		if (ev.key.keysym.sym == SDLK_LCTRL || ev.key.keysym.sym == SDLK_RCTRL)
 		{

@@ -84,11 +84,56 @@ public:
 		{ SDLK_UP, "\x1B[A" },
 		{ SDLK_DOWN, "\x1B[B" },
 		{ SDLK_RIGHT, "\x1B[C" },
-		{ SDLK_LEFT, "\x1B[D" }
+		{ SDLK_LEFT, "\x1B[D" },
+		{ SDLK_DELETE, "\b" },
+		{ SDLK_F1, "\x1B[11~" },
+		{ SDLK_F2, "\x1B[12~" },
+		{ SDLK_F3, "\x1B[14~" },
+		{ SDLK_F4, "\x1B[15~" },
+		{ SDLK_F5, "\x1B[16~" },
+		{ SDLK_F6, "\x1B[17~" },
+		{ SDLK_F7, "\x1B[18~" },
+		{ SDLK_F8, "\x1B[19~" },
+		{ SDLK_F9, "\x1B[20~" },
+		{ SDLK_F10, "\x1B[21~" }
+	};
+
+	/* Control Key map, for stuff like ^C, ^O, etc. */
+	std::unordered_map<int, std::string> control_key_map = {
+		{ SDLK_SPACE, "\x0" },
+		{ SDLK_a, "\x1" },
+		{ SDLK_b, "\x2" },
+		{ SDLK_c, "\x3" },
+		{ SDLK_d, "\x4" },
+		{ SDLK_e, "\x5" },
+		{ SDLK_f, "\x6" },
+		{ SDLK_g, "\x7" },
+		{ SDLK_h, "\x8" },
+		{ SDLK_i, "\x9" },
+		{ SDLK_j, "\xA" },
+		{ SDLK_k, "\xB" },
+		{ SDLK_l, "\xC" }, 
+		{ SDLK_m, "\xD" },
+		{ SDLK_n, "\xE" },
+		{ SDLK_o, "\xF" },
+		{ SDLK_p, "\x10" },
+		{ SDLK_q, "\x11" },
+		{ SDLK_r, "\x12" },
+		{ SDLK_s, "\x13" },
+		{ SDLK_t, "\x14" },
+		{ SDLK_u, "\x15" },
+		{ SDLK_v, "\x16" },
+		{ SDLK_w, "\x17" },
+		{ SDLK_x, "\x18" },
+		{ SDLK_y, "\x19" },
+		{ SDLK_z, "\x1A" }
 	};
 
 	/* For sending ^C */
 	bool CTRL_down;
+
+	/* For DECKAM */
+	bool keyboard_disabled = false;
 
 	/* Required for mouse interactivty */
 	float font_scale;
