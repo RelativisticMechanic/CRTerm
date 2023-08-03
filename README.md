@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/ksqojxpjtqo3k4bk?svg=true)](https://ci.appveyor.com/project/RelativisticMechanic/crterm)
+
+
 <img align="right" width="200" height="200" src="images/crterm-logo.png">
 
 
