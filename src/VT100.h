@@ -16,6 +16,7 @@
 #include <map>
 #include "SDL_gpu.h"
 #include "Console.h"
+#include "ConsoleFont.h"
 #include "CRTermConfig.h"
 
 #define VT100_ARG_STACK_SIZE 8
@@ -150,7 +151,7 @@ public:
 	/* Required for mouse interactivty */
 	float font_scale;
 
-	VT100(CRTermConfiguration*, GPU_Target*);
+	VT100(CRTermConfiguration*, ConsoleFont*, GPU_Target*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);
 	void VT100Send(std::string);

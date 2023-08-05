@@ -99,6 +99,9 @@
     <ClCompile Include="TrueType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PNGFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders.h">
@@ -618,6 +621,12 @@
       <Filter>Header Files\freetype</Filter>
     </ClInclude>
     <ClInclude Include="TrueType.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleFont.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PNGFont.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,14 +7,15 @@
 
 #include "Console.h"
 #include "Shaders.h"
+#include "PNGFont.h"
 
-Console::Console(CRTermConfiguration* cfg)
+Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 {
 	/* Initialise console dimensions */
 	this->console_w = cfg->console_width;
 	this->console_h = cfg->console_height;
-	this->font_w = cfg->font_width;
-	this->font_h = cfg->font_height;
+	this->font_w = fnt->GetXAdvance();
+	this->font_h = fnt->GetYAdvance();
 
 	this->cursor_x = 0;
 	this->cursor_y = 0;
@@ -34,29 +35,8 @@ Console::Console(CRTermConfiguration* cfg)
 	this->attrib_buffer = (ConsoleChar*)calloc(this->console_w * this->maxlines, sizeof(ConsoleAttrib));
 
 	/* Load the font and the background image */
-	this->console_font = GPU_LoadImage(cfg->bitmap_font_file.c_str());
+	this->console_font = fnt;
 	this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
-
-	/* 
-	Now create 256 GPU_Targets each containing
-	the character data from the file.
-	*/
-	int chars_per_row = this->console_font->w / this->font_w;
-	for (int i = 0; i < 256; i++)
-	{
-		GPU_Rect r; 
-		r.x = (i % chars_per_row) * this->font_w;
-		r.y = (i / chars_per_row) * this->font_h;
-		r.w = this->font_w;
-		r.h = this->font_h;
-		this->char_blocks[i] = GPU_CreateImage(this->font_w, this->font_h, GPU_FORMAT_RGBA);
-		GPU_Target* tg = GPU_LoadTarget(this->char_blocks[i]);
-		if (tg != this->char_blocks[i]->target || tg == NULL)
-		{
-			std::cout << "Warning: GPU_LoadTarget Failed!" << std::endl;
-		}
-		GPU_Blit(this->console_font, &r, tg, this->font_w / 2.0, this->font_h / 2.0);
-	}
 
 	/* Separate render buffer for rendering the console before scaling it. */
 	this->render_buffer = GPU_CreateImage(this->console_resolution_x, this->console_resolution_y, GPU_FORMAT_RGBA);
@@ -369,12 +349,14 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 			/* If its backcolor, don't draw, we already pass back color to the shader */
 			if (back_color != this->default_back_color)
 			{
-				/* If it is not back_color draw a block (ASCII 219) with the backcolor */
+				/* If it is not the default back color draw a rect with the backcolor */
+				GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.5);
 				GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[back_color].returnArray());
-				GPU_Blit(this->char_blocks[219], NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
+				GPU_RectangleFilled(this->render_buffer->target, xcur, ycur, xcur + this->font_w, ycur + this->font_h, SDL_Color{ 255, 255, 255, 255 });
+				GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
 			}
 			GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[text_color].returnArray());
-			GPU_Blit(this->char_blocks[c], NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
+			GPU_Blit(this->console_font->GetGlyph(c), NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
 		}
 	}
 

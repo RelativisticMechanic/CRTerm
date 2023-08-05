@@ -8,22 +8,25 @@
 #include FT_FREETYPE_H
 
 #include "SDL_gpu.h"
+#include "ConsoleFont.h"
 
-class FreeTypeFont
+class FreeTypeFont : public ConsoleFont
 {
 public:
-	GPU_Image* glyph_images[256];
 
 	FreeTypeFont(std::string filename, int size);
+	int GetXAdvance() override;
+	int GetYAdvance() override;
+	GPU_Image* GetGlyph(ConsoleChar c) override;
 	~FreeTypeFont();
 
 private:
 	FT_Library ft_lib;
 	FT_Face ft_face;
 	SDL_Surface* glyph_surfaces[256];
+	GPU_Image* glyph_images[256];
 	uint8_t* glyph_data[256];
 	int mono_width;
 	int mono_height;
-	int advance_width;
 };
 #endif

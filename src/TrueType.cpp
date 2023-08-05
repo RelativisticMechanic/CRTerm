@@ -7,7 +7,6 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
     err = FT_New_Face(ft_lib, filename.c_str(), 0, &ft_face);
     this->mono_height = size;
     this->mono_width = size;
-    this->advance_width = size / 2;
 
     /* Create 256 SDL_Surfaces that can be blitted at request */
     err = FT_Set_Pixel_Sizes(ft_face, mono_width, mono_height);
@@ -37,14 +36,11 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
             for (int j = 0; j < width; j++)
             {
                 uint8_t val = src[i * width + j];
-                /* Remove anti-aliasing, just have 1 or 0. */
-                if (val > 128)
+
+                int idx = (offsety + i) * mono_width + (offsetx + j);
+                if (idx < mono_width * mono_height && idx > 0)
                 {
-                    int idx = (offsety + i) * mono_width + (offsetx + j);
-                    if (idx < mono_width * mono_height && idx > 0)
-                    {
-                        letter_buf[idx] = 255;
-                    }
+                    letter_buf[idx] = val;
                 }
 
             }
@@ -66,6 +62,21 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
         /* Convert to GPU_Image */
         glyph_images[i] = GPU_CopyImageFromSurface(glyph_surfaces[i]);
     }
+}
+
+int FreeTypeFont::GetXAdvance()
+{
+    return this->mono_width / 2;
+}
+
+int FreeTypeFont::GetYAdvance()
+{
+    return this->mono_height;
+}
+
+GPU_Image* FreeTypeFont::GetGlyph(ConsoleChar c)
+{
+    return this->glyph_images[c];
 }
 
 FreeTypeFont::~FreeTypeFont()

@@ -13,7 +13,7 @@
 #include <string>
 #include "CRTermConfig.h"
 #include "SDL_gpu.h"
-#include "TrueType.h"
+#include "ConsoleFont.h"
 
 #define CONSOLE_MIN_LINES 500
 #define CONSOLE_MAX_LINES 10000
@@ -27,13 +27,6 @@
 */
 
 #define CONSTRUCT_ATTRIBUTE(fcol,bcol) (((bcol) << 4) | (fcol))
-
-/*
-	In future when we implement UTF-8
-*/
-
-typedef unsigned char ConsoleChar;
-typedef unsigned char ConsoleAttrib;
 
 class ConsoleColor
 {
@@ -70,7 +63,7 @@ public:
 	ConsoleAttrib* attrib_buffer;
 	/* Character-wise resolution of the console */
 	int console_w, console_h;
-	GPU_Image* console_font;
+	ConsoleFont* console_font;
 	GPU_Image* crt_background;
 	int font_w, font_h;
 	int cursor_x, cursor_y;
@@ -98,7 +91,7 @@ public:
 	/* Wrap Around (DECAWM) */
 	bool wrap_around = true;
 
-	Console(CRTermConfiguration*);
+	Console(CRTermConfiguration*, ConsoleFont*);
 	void PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_color);
 	unsigned char ReadChar(int x, int y);
 	void PutCharExt(ConsoleChar c, int fore_color, int back_color);
@@ -119,8 +112,6 @@ public:
 	void EnableWrapAround();
 	void DisableWrapAround();
 	void SetSelection(bool selection, int start_x=0, int start_y=0, int end_x=0, int end_y=0);
-	/* The 256 letters glyphs extracted from the font image */
-	GPU_Image* char_blocks[256];
 
 private:
 	ConsoleColor color_scheme[16];

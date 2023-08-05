@@ -157,6 +157,7 @@
     <ClCompile Include="lib\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="PNGFont.cpp" />
     <ClCompile Include="Shaders.cpp" />
     <ClCompile Include="TrueType.cpp" />
     <ClCompile Include="VT100.cpp" />
@@ -164,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArgumentParser.h" />
+    <ClInclude Include="ConsoleFont.h" />
     <ClInclude Include="CRTerm.h" />
     <ClInclude Include="Debug.h" />
     <ClInclude Include="lib\freetype\include\freetype\config\ftconfig.h" />
@@ -221,6 +223,7 @@
     <ClInclude Include="lib\freetype\include\freetype\tttables.h" />
     <ClInclude Include="lib\freetype\include\freetype\tttags.h" />
     <ClInclude Include="lib\freetype\include\ft2build.h" />
+    <ClInclude Include="PNGFont.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TrueType.h" />
     <ClInclude Include="UITheme.h" />

@@ -21,6 +21,9 @@
 #include "ContextMenu.h"
 #include "ArgumentParser.h"
 #include "CRTerm.h"
+#include "ConsoleFont.h"
+#include "PNGFont.h"
+#include "TrueType.h"
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
@@ -46,25 +49,46 @@ int main(int argc, char* argv[])
 	arg_parse.GetArgument("fs", cfg->font_scale);
 	arg_parse.GetArgument("cmd", cfg->shell_command);
 
-	/* Calculate the required screen resolution from the configuration */
-	int resolution_x = (int)(cfg->font_width * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;
-	int resolution_y = (int)(cfg->font_height * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT + SIDES_WIDTH;
-
 	/* Create the screen */
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
-	GPU_Target* screen = GPU_Init(resolution_x, resolution_y, GPU_DEFAULT_INIT_FLAGS);
-
+	/* Default to 640x480, we'll calculate the required terminal resolution later. */
+	GPU_Target* screen = GPU_Init(640, 480, GPU_DEFAULT_INIT_FLAGS);
 	if (screen == NULL)
 	{
 		return 1;
 	}
+
+	ConsoleFont* fnt;
+	/* Check if font if TTF or PNG */
+	if (endsWith(cfg->bitmap_font_file, ".png"))
+	{
+		fnt = new PNGBitmapFont(cfg->bitmap_font_file, cfg->font_width, cfg->font_height);
+	}
+	else if (endsWith(cfg->bitmap_font_file, ".ttf"))
+	{
+		/* Ignore font size, default to 16. Scale will handle. */
+		fnt = new FreeTypeFont(cfg->bitmap_font_file, 16);
+	}
+	else
+	{
+		std::cerr << "Unsupported font type detected: " << cfg->bitmap_font_file << ". Exitting." << std::endl;
+		return -1;
+	}
+
+	/* Calculate the required screen resolution from the font */
+	int resolution_x, resolution_y;
+	resolution_x = (int)(fnt->GetXAdvance() * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;
+	resolution_y = (int)(fnt->GetYAdvance() * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT + SIDES_WIDTH;
+	
+	/* Set the resolution */
+	GPU_SetWindowResolution(resolution_x, resolution_y);
 
 	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
 
 	SDL_Event ev;
 	bool done = false;
 	
-	VT100* vt100_term = new VT100(cfg, screen);
+	VT100* vt100_term = new VT100(cfg, fnt, screen);
 	/* Add the offsety as the custom titlebar height */
 	vt100_term->screen_offsety = TITLE_BAR_HEIGHT;
 	vt100_term->screen_offsetx = SIDES_WIDTH;

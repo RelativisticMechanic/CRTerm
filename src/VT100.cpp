@@ -8,9 +8,9 @@
 
 void __cdecl outputListener(LPVOID term);
 
-VT100::VT100(CRTermConfiguration* cfg, GPU_Target* render_target)
+VT100::VT100(CRTermConfiguration* cfg, ConsoleFont* fnt, GPU_Target* render_target)
 {
-	con = new Console(cfg);
+	con = new Console(cfg, fnt);
 	this->render_target = render_target;
 	this->fg = con->default_fore_color;
 	this->bg = con->default_back_color;
