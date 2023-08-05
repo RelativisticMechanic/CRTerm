@@ -19,7 +19,7 @@ const float flicker_fraction = 0.15;
 uniform vec3 back_color;
 const vec4 frame_color = vec4(0.20, 0.21, 0.25, 1.0);
 const float background_brightness = 0.25;
-const float crt_noise_fraction = 0.15;
+const float crt_noise_fraction = 0.10;
 
 // CRT Effect settings
 uniform float warp; 
@@ -149,7 +149,7 @@ vec4 crtFrame(in vec2 staticCoords, in vec2 uv)
     normal = normal / length(normal);
 
     /* Sample glow + blur for a decent reflection of the content on frame */
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 20; i++)
     {
         color = mix(color, crtGlow(staticCoords - (i/256.0)*normal, 1/256.0).rgb, 0.01);
     }

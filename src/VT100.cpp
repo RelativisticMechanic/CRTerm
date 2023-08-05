@@ -338,13 +338,17 @@ void VT100::VT100Take(unsigned char c)
 					else
 					{
 						int attr = argument_stack[i].value;
-						/* Make bright if 1 */
+						/* Make bold if 1 */
 						if (attr == 1)
 						{
+							/* 
+							NOTE for v0.3.0, 
+							Since this seems to mess up neofetch if we make bright, and we have not implemented bold yet, we simply ignore.
+							
 							this->fg |= 8;
-							/* Don't make background bright if default color, as it is blinding after the glow CRT shader LOL */
 							if(this->bg != con->default_back_color)
 								this->bg |= 8;
+							*/
 						}
 						/* Swap bg and fg */
 						else if (attr == 7 || attr == 27)
@@ -503,6 +507,11 @@ void VT100::VT100Take(unsigned char c)
 			{
 				// IGNORE.
 			}
+			/* CSI ? 1004 h - DEC Turn ON reporting focus change */
+			else if (this->argument_stack[0].value == 1004)
+			{
+				this->report_focus_change = true;
+			}
 			else
 			{
 				std::cout << "Unimplemented ON: " << this->argument_stack[0].value << std::endl;
@@ -533,6 +542,11 @@ void VT100::VT100Take(unsigned char c)
 			else if (this->argument_stack[0].value == 12)
 			{
 				// IGNORE.
+			}
+			/* CSI ? 1004 h - DEC Turn OFF reporting focus change */
+			else if (this->argument_stack[0].value == 1004)
+			{
+				this->report_focus_change = false;
 			}
 			else
 			{
@@ -638,6 +652,25 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 				this->is_selected = false;
 			}
 			this->is_dragging = false;
+		}
+		break;
+	case SDL_WINDOWEVENT:
+		switch (ev.window.event)
+		{
+		case SDL_WINDOWEVENT_FOCUS_GAINED:
+			if (this->report_focus_change)
+			{
+				WriteFile(this->toProgram, "\x1B[I", 3, NULL, NULL);
+			}
+			break;
+		case SDL_WINDOWEVENT_FOCUS_LOST:
+			if (this->report_focus_change)
+			{
+				WriteFile(this->toProgram, "\x1B[O", 3, NULL, NULL);
+			}
+			break;
+		default:
+			break;
 		}
 		break;
 	case SDL_QUIT:

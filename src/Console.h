@@ -13,6 +13,7 @@
 #include <string>
 #include "CRTermConfig.h"
 #include "SDL_gpu.h"
+#include "TrueType.h"
 
 #define CONSOLE_MIN_LINES 500
 #define CONSOLE_MAX_LINES 10000

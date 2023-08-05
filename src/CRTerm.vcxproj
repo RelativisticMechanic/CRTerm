@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)\include;$(ProjectDir)\lib\imgui\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)\include;$(ProjectDir)\lib\imgui\include;$(ProjectDir)\lib\freetype\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -108,14 +108,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)lib\imgui\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)lib\imgui\include;$(ProjectDir)include;$(ProjectDir)lib\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_gpu.lib;winmm.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2;$(ProjectDir)lib\SDL2_gpu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_gpu.lib;winmm.lib;Dwmapi.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2;$(ProjectDir)lib\SDL2_gpu;$(ProjectDir)lib\freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)lib\imgui\include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\SDL2_gpu\include;$(ProjectDir)lib\SDL2\include;$(ProjectDir)lib\imgui\include;$(ProjectDir)include;$(ProjectDir)lib\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -134,8 +134,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2;$(ProjectDir)lib\SDL2_gpu;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_gpu.lib;winmm.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2;$(ProjectDir)lib\SDL2_gpu;$(ProjectDir)lib\freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_gpu.lib;winmm.lib;Dwmapi.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
@@ -158,6 +158,7 @@
     <ClCompile Include="lib\imgui\imgui_tables.cpp" />
     <ClCompile Include="lib\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Shaders.cpp" />
+    <ClCompile Include="TrueType.cpp" />
     <ClCompile Include="VT100.cpp" />
     <ClCompile Include="Win32ClipBoard.cpp" />
   </ItemGroup>
@@ -165,7 +166,63 @@
     <ClInclude Include="ArgumentParser.h" />
     <ClInclude Include="CRTerm.h" />
     <ClInclude Include="Debug.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\ftheader.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\ftoption.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\integer-types.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\mac-support.h" />
+    <ClInclude Include="lib\freetype\include\freetype\config\public-macros.h" />
+    <ClInclude Include="lib\freetype\include\freetype\freetype.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftadvanc.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftbbox.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftbdf.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftbitmap.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftbzip2.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftcache.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftchapters.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftcid.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftcolor.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftdriver.h" />
+    <ClInclude Include="lib\freetype\include\freetype\fterrdef.h" />
+    <ClInclude Include="lib\freetype\include\freetype\fterrors.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftfntfmt.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftgasp.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftglyph.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftgxval.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftgzip.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftimage.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftincrem.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftlist.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftlogging.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftlzw.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftmac.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftmm.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftmodapi.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftmoderr.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftotval.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftoutln.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftparams.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftpfr.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftrender.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftsizes.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftsnames.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftstroke.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftsynth.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftsystem.h" />
+    <ClInclude Include="lib\freetype\include\freetype\fttrigon.h" />
+    <ClInclude Include="lib\freetype\include\freetype\fttypes.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="lib\freetype\include\freetype\otsvg.h" />
+    <ClInclude Include="lib\freetype\include\freetype\t1tables.h" />
+    <ClInclude Include="lib\freetype\include\freetype\ttnameid.h" />
+    <ClInclude Include="lib\freetype\include\freetype\tttables.h" />
+    <ClInclude Include="lib\freetype\include\freetype\tttags.h" />
+    <ClInclude Include="lib\freetype\include\ft2build.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="TrueType.h" />
     <ClInclude Include="UITheme.h" />
     <ClInclude Include="ConfigEditor.h" />
     <ClInclude Include="ConfigSelector.h" />

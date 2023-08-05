@@ -47,7 +47,21 @@ public:
 	GPU_Target* render_target;
 	int fg;
 	int bg;
-	bool bracketed_mode, alternate_keypad_mode;
+
+	/* 
+		Following are the VT100 state variables that will be
+		used by the VT100_HandlEvent() 
+	*/
+
+	/* For bracketed paste mode */
+	bool bracketed_mode = false; 
+	/* For alternative keypad mode */
+	bool alternate_keypad_mode = false;
+	/* For DECKAM */
+	bool keyboard_disabled = false;
+	/* For reporting focus change */
+	bool report_focus_change = false;
+
 	bool is_selected, is_dragging;
 	int selected_start_x = 0;
 	int selected_start_y = 0;
@@ -95,7 +109,8 @@ public:
 		{ SDLK_F7, "\x1B[18~" },
 		{ SDLK_F8, "\x1B[19~" },
 		{ SDLK_F9, "\x1B[20~" },
-		{ SDLK_F10, "\x1B[21~" }
+		{ SDLK_F10, "\x1B[21~" },
+		{ SDLK_HOME, "\x1B[H" }
 	};
 
 	/* Control Key map, for stuff like ^C, ^O, etc. */
@@ -131,9 +146,6 @@ public:
 
 	/* For sending ^C */
 	bool CTRL_down;
-
-	/* For DECKAM */
-	bool keyboard_disabled = false;
 
 	/* Required for mouse interactivty */
 	float font_scale;

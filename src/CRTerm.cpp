@@ -72,9 +72,10 @@ int main(int argc, char* argv[])
 	CRTermUIInstance* UI = new CRTermUIInstance(screen);
 
 	/* Prepare custom title bar */
+#ifdef CRTERM_CUSTOM_TITLE_BAR
 	CustomTitleBar* title = new CustomTitleBar(screen);
 	title->show = true;
-
+#endif
 	ConfigEditor* cfg_edit = new ConfigEditor();
 	cfg_edit->cfg = cfg;
 	cfg_edit->show = false;
@@ -97,7 +98,9 @@ int main(int argc, char* argv[])
 	cmenu->Add("Config Editor");
 	cmenu->Add("Send ^C");
 
+#ifdef CRTERM_CUSTOM_TITLE_BAR
 	UI->AddElement(title);
+#endif
 	UI->AddElement(cfg_edit);
 	UI->AddElement(cfg_load);
 	UI->AddElement(cmenu);

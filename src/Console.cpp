@@ -82,8 +82,11 @@ Console::Console(CRTermConfiguration* cfg)
 	this->crt_warp = cfg->crt_warp;
 	this->start_line = 0;
 	this->last_line = 0;
+
 	/* Clear the console */
 	this->Clear();
+
+
 }
 
 void Console::Clear()
