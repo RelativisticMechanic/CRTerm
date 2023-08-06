@@ -8,6 +8,7 @@
 #include "Console.h"
 #include "Shaders.h"
 #include "PNGFont.h"
+#include "XTerm256Palette.h"
 
 Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 {
@@ -63,10 +64,14 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	this->start_line = 0;
 	this->last_line = 0;
 
+	/* Generate the 256-color palette */
+	for (int i = 0; i < 256; i++)
+	{
+		this->color_256[i] = XTermPaletteGetColor(i);
+	}
+
 	/* Clear the console */
 	this->Clear();
-
-
 }
 
 void Console::Clear()
@@ -149,12 +154,16 @@ void Console::Scroll()
 	else
 	{
 		/* Scroll up by 1 line */
-		memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(ConsoleChar) * 1 * this->console_w), this->console_w * (this->maxlines - 1));
-		memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(ConsoleAttrib) * this->console_w), this->console_w * (this->maxlines - 1));
+		memcpy(this->buffer, (void*)((uintptr_t)this->buffer + sizeof(ConsoleChar) * 1 * this->console_w), this->console_w * (this->maxlines - 1) * sizeof(ConsoleChar));
+		memcpy(this->attrib_buffer, (void*)((uintptr_t)this->attrib_buffer + sizeof(ConsoleAttrib) * this->console_w), this->console_w * (this->maxlines - 1) * sizeof(ConsoleAttrib));
 	}
 	/* Empty last line */
-	memset((void*)((uintptr_t)this->buffer + sizeof(ConsoleChar) * (this->start_line + this->console_h - 1) * this->console_w), ' ', this->console_w);
-	memset((void*)((uintptr_t)this->attrib_buffer + sizeof(ConsoleAttrib) * (this->start_line + this->console_h - 1) * this->console_w), CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color), this->console_w);
+	for (int i = 0; i < this->console_w; i++)
+	{
+		this->buffer[(start_line + console_h - 1) * console_w + i] = ' ';
+		this->attrib_buffer[(start_line + console_h - 1) * console_w + i] = CONSTRUCT_ATTRIBUTE(this->default_fore_color, this->default_back_color);
+	}
+
 	this->cursor_y -= 1;
 	this->cursor_x = 0;
 	last_line = start_line;
@@ -279,7 +288,22 @@ void Console::PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_co
 	start_line = last_line;
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h) return;
 	this->buffer[start_line * this->console_w + y * this->console_w + x] = c;
-	this->attrib_buffer[start_line * this->console_w + y * this->console_w + x] = CONSTRUCT_ATTRIBUTE(fore_color, back_color);
+
+	ConsoleAttrib attrib = CONSTRUCT_ATTRIBUTE(fore_color, back_color);
+	/* If fore-color is greater than 15, we are in 8-bit color mode, subtract 16 */
+	if (fore_color >= 16)
+	{
+		fore_color -= 16;
+		attrib |= CONSTRUCT_ATTRIBUTE_256COL(fore_color, 0x00);
+	}
+
+	if (back_color >= 16)
+	{
+		back_color -= 16;
+		attrib |= CONSTRUCT_ATTRIBUTE_256COL(0x00, back_color);
+	}
+
+	this->attrib_buffer[(start_line + y) * this->console_w + x] = attrib;
 }
 
 void Console::Puts(std::string s)
@@ -341,21 +365,40 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		{
 			int xcur = (x * this->font_w);
 			int ycur = (y * this->font_h);
-			ConsoleChar c = this->buffer[start_line * this->console_w + y * this->console_w + x];
-			ConsoleAttrib attrib = this->attrib_buffer[start_line * this->console_w + y * this->console_w + x];
+			ConsoleChar c = this->buffer[(start_line + y) * this->console_w + x];
+			ConsoleAttrib attrib = this->attrib_buffer[(start_line + y) * this->console_w + x];
 			/* Lower 4 bits = text color, higher 4 bits = background color */
-			int text_color = attrib & 0x0F;
-			int back_color = (attrib & 0xF0) >> 4;
-			/* If its backcolor, don't draw, we already pass back color to the shader */
-			if (back_color != this->default_back_color)
+			int text_color_idx = attrib & 0x0F;
+			int back_color_idx = (attrib & 0xF0) >> 4;
+
+			ConsoleColor text_color = this->color_scheme[text_color_idx];
+			ConsoleColor back_color = this->color_scheme[back_color_idx];
+
+			/* Check if 8-bit color BG bit is set */
+			if (attrib & 0xFF000000)
+			{
+				/* We're rendering 256 color baby! */
+				back_color = this->color_256[(attrib & 0xFF000000) >> 24];
+			}
+
+			/* Check if 8-bit color FG bit is set */
+			if (attrib & 0x00FF0000)
+			{
+				text_color = this->color_256[(attrib & 0x00FF0000) >> 16];
+			}
+
+			/* If its backcolor, don't draw, ignore if we are in 8-bit color mode.
+			We already pass back color to the shader */
+
+			if (back_color_idx != this->default_back_color || attrib & 0xFFFF0000)
 			{
 				/* If it is not the default back color draw a rect with the backcolor */
 				GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.5);
-				GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[back_color].returnArray());
+				GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, back_color.returnArray());
 				GPU_RectangleFilled(this->render_buffer->target, xcur, ycur, xcur + this->font_w, ycur + this->font_h, SDL_Color{ 255, 255, 255, 255 });
 				GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
 			}
-			GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[text_color].returnArray());
+			GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, text_color.returnArray());
 			GPU_Blit(this->console_font->GetGlyph(c), NULL, this->render_buffer->target, xcur + font_w / 2, ycur + font_h / 2);
 		}
 	}

@@ -339,6 +339,8 @@
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="VT100.h" />
     <ClInclude Include="Win32ClipBoard.h" />
+    <ClCompile Include="XTerm256Palette.cpp" />
+    <ClInclude Include="XTerm256Palette.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CRTerm.rc" />

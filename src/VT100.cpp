@@ -387,7 +387,7 @@ void VT100::VT100Take(unsigned char c)
 									if (i < VT100_ARG_STACK_SIZE - 1)
 									{
 										i += 1;
-										this->fg = argument_stack[i].value;
+										this->fg = argument_stack[i].value + 16;
 									}
 								}
 							}
@@ -403,7 +403,8 @@ void VT100::VT100Take(unsigned char c)
 									if (i < VT100_ARG_STACK_SIZE - 1)
 									{
 										i += 1;
-										this->bg = argument_stack[i].value;
+										/* 16 is added to tell PlaceChar to know this is 8-bit color */
+										this->bg = argument_stack[i].value + 16;
 									}
 								}
 							}

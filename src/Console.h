@@ -23,11 +23,23 @@
 	Helper function to construct console attributes, 
 	which are basically VGA attributes that store
 	higher 4 bits as background color and lower 4 bits
-	as foreground color
+	as foreground color.
 */
 
-#define CONSTRUCT_ATTRIBUTE(fcol,bcol) (((bcol) << 4) | (fcol))
+/*
+	The attribute is a 32-bit structure that looks like this:
+	BITS 0-3: 4-bit forecolor
+	BITS 4-7: 4-bit backcolor
+	BITS 8-15: Reserved for future attributes like bold, italics, etc.
+	BITS 16-23: 8-bit forecolor
+	BITS 24-31: 8-bit backcolor
 
+	Usually, unless specified the 16-31 bits are zeroed for normal operation.
+	If they are non-zero, then they take precedence. 
+*/
+
+#define CONSTRUCT_ATTRIBUTE(fcol,bcol) ((((bcol) << 4) | (fcol)))
+#define CONSTRUCT_ATTRIBUTE_256COL(f256, b256) ((((b256) << 8) | (f256)) << 16)
 class ConsoleColor
 {
 private:
@@ -115,6 +127,8 @@ public:
 
 private:
 	ConsoleColor color_scheme[16];
+	ConsoleColor color_256[256];
+
 	uint32_t crt_shader_id, text_shader_id;
 	GPU_ShaderBlock crt_shader_block, text_shader_block;
 	/* 

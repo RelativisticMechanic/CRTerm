@@ -2,13 +2,13 @@
 #define CONSOLE_FONT_H
 
 #include "SDL_gpu.h"
-
+#include <stdint.h>
 /*
 	In future when we implement UTF-8
 */
 
 typedef unsigned char ConsoleChar;
-typedef unsigned char ConsoleAttrib;
+typedef uint32_t ConsoleAttrib;
 
 class ConsoleFont
 {

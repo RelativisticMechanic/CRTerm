@@ -11,9 +11,9 @@ A CRT style terminal for Windows. Watch it in [action](https://youtu.be/oOITpIzd
 
 <b>Note: This is a WIP, it is not ready for production!</b>
 
-| Amber with WSL (using Ubuntu Mono TrueType) | Green with cmd.exe | White with Powershell |
+| Amber with WSL | Green with cmd.exe | White with Powershell | XTerm 256 Color Support |
 | -------------  | ------------------ | -----------   |
-|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) |
+|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) |
 
 ## Motivation
 
@@ -36,6 +36,7 @@ The current version is 0.3.0, it is still in active development and may not repl
 * 16-color palette
 * Scrollback history
 * TrueType support
+* 256 Color (in upcoming release)
 
 Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
