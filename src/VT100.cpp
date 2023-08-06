@@ -80,11 +80,6 @@ void VT100::VT100Take(unsigned char c)
 		else if (c == ']')
 		{
 			parser_state = VTSTATE_CONTROL_STRING;
-			control_string_idx = 0;
-			for (int i = 0; i < VT100_STRING_SIZE; i++)
-			{
-				control_strings[i] = "";
-			}
 		}
 		else if (c == '>')
 		{
@@ -106,6 +101,7 @@ void VT100::VT100Take(unsigned char c)
 		break;
 	case VTSTATE_ATTR:
 	case VTSTATE_PRIVATE:
+	case VTSTATE_CONTROL_STRING:
 		if (c == '?')
 		{
 			parser_state = VTSTATE_PRIVATE;
@@ -126,34 +122,41 @@ void VT100::VT100Take(unsigned char c)
 				}
 				argument_stack[stack_ptr].value = 0;
 				argument_stack[stack_ptr].empty = true;
-				if (parser_state != VTSTATE_PRIVATE)
+				if (parser_state == VTSTATE_ATTR)
 					parser_state = VTSTATE_ENDVAL;
-				else
+				else if (parser_state == VTSTATE_PRIVATE)
 					parser_state = VTSTATE_PRIVATE_ENDVAL;
+				else if (parser_state == VTSTATE_CONTROL_STRING)
+					parser_state = VTSTATE_CONTROL_ENDVAL;
 			}
 		}
 		break;
-	case VTSTATE_CONTROL_STRING:
-		if (isdigit(c))
-		{
-			control_string_idx = (c - '0') % VT100_STRING_SIZE;
-		}
-		else
-		{
-			parser_state = VTSTATE_TAKE_STRING;
-		}
-		break;
 	case VTSTATE_TAKE_STRING:
-		if (c == '\x7')
+		if (c == '\x1B' || c == '\x7')
 		{
-			parser_state = VTSTATE_NORMAL;
-			// Set the window title to 0 string
-			std::string window_title = "Gautam's CRTerm - " + control_strings[0];
+			if (c == '\x1B')
+				parser_state = VTSTATE_END_STRING;
+			else
+				parser_state = VTSTATE_NORMAL;
+
+			/* Set the window title to 0 string */
+			std::string window_title = "Gautam's CRTerm - " + title;
 			SDL_SetWindowTitle(this->sdl_window, window_title.c_str());
 		}
 		else
 		{
-			control_strings[control_string_idx] += c;
+			if (control_string_idx == 0)
+			{
+				title += c;
+			}
+		}
+		break;
+
+	case VTSTATE_END_STRING:
+		parser_state = VTSTATE_NORMAL;
+		if (c != '\\')
+		{
+			std::cerr << "Warning: Expected an ESC \\ at the end of ESC [ cmd; <string> ESC \\ but got '" << c << "'" << std::endl;
 		}
 		break;
 	default:
@@ -493,7 +496,8 @@ void VT100::VT100Take(unsigned char c)
 			/* CSI ? 2 h DEC Turn ON disabled keyboard input */
 			else if (this->argument_stack[0].value == 2)
 			{
-				this->keyboard_disabled = true;
+				/* TODO: This causes some UTF-8 issues for now */
+				/* this->keyboard_disabled = true; */
 			}
 			/* CSI ? 7 h DEC Turn ON wraparound */
 			else if (this->argument_stack[0].value == 7)
@@ -561,6 +565,26 @@ void VT100::VT100Take(unsigned char c)
 		}
 		if (parser_state != VTSTATE_IGNORE_NEXT)
 			parser_state = VTSTATE_NORMAL;
+	}
+
+	if (parser_state == VTSTATE_CONTROL_ENDVAL)
+	{
+		control_string_idx = argument_stack[0].value;
+		switch (control_string_idx)
+		{
+			/* ESC ] 0; <title> Set Title */
+		case 0:
+			title = "";
+			parser_state = VTSTATE_TAKE_STRING;
+			break;
+			/* ESC ] 8; <string> Hyperlink */
+		case 8:
+		default:
+			std::cerr << "Unimplemented control string: " << argument_stack[0].value << std::endl;
+			parser_state = VTSTATE_TAKE_STRING;
+			break;
+		}
+
 	}
 }
 
