@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <fstream>
+#include "CRTerm.h"
 #include "CRTermConfig.h"
 
 std::string GetDefaultConfigJSON()
@@ -32,10 +33,19 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 	try
 	{
 		configuration_data = nlohmann::json::parse(json_file);
-		this->font_height = configuration_data.at("font_height");
-		this->font_width = configuration_data.at("font_width");
-		this->font_scale = configuration_data.at("font_scale");
 		this->bitmap_font_file = configuration_data.at("font");
+		/* If font is a PNG, expect font_height, font_width */
+		if (endsWith(this->bitmap_font_file, ".png"))
+		{
+			this->font_height = configuration_data.at("font_height");
+			this->font_width = configuration_data.at("font_width");
+		}
+		else
+		{
+			this->font_height = 0;
+			this->font_width = 0;
+		}
+		this->font_scale = configuration_data.at("font_scale");
 		this->console_width = configuration_data.at("console_width");
 		this->console_height = configuration_data.at("console_height");
 		this->crt_background_image = configuration_data.at("background");

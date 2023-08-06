@@ -8,6 +8,8 @@ class PNGBitmapFont : public ConsoleFont
 {
 public:
 	PNGBitmapFont(std::string filename, int char_width, int char_height);
+	~PNGBitmapFont();
+
 	GPU_Image* GetGlyph(ConsoleChar) override;
 	int GetXAdvance() override;
 	int GetYAdvance() override;

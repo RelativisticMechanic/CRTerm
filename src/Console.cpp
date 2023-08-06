@@ -32,7 +32,7 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	this->default_back_color = cfg->default_back_color;
 	/* Create the character and attribute buffers */
 	this->buffer = (ConsoleChar*)calloc(this->console_w * this->maxlines, sizeof(ConsoleChar));
-	this->attrib_buffer = (ConsoleChar*)calloc(this->console_w * this->maxlines, sizeof(ConsoleAttrib));
+	this->attrib_buffer = (ConsoleAttrib*)calloc(this->console_w * this->maxlines, sizeof(ConsoleAttrib));
 
 	/* Load the font and the background image */
 	this->console_font = fnt;

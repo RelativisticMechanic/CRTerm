@@ -40,8 +40,6 @@ VT100::VT100(CRTermConfiguration* cfg, ConsoleFont* fnt, GPU_Target* render_targ
 	{
 		con->Puts("Failed to initialize provided shell application.\n");
 	}
-	/* Wait for it to spawn */
-	Sleep(500);
 }
 
 /* 

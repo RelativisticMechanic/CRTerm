@@ -47,3 +47,12 @@ GPU_Image* PNGBitmapFont::GetGlyph(ConsoleChar c)
 {
 	return this->characters[c];
 }
+
+PNGBitmapFont::~PNGBitmapFont()
+{
+	for (int i = 0; i < 256; i++)
+	{
+		GPU_FreeImage(this->characters[i]);
+	}
+	GPU_FreeImage(this->font_bitmap);
+}

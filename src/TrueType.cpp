@@ -1,10 +1,16 @@
 #include "TrueType.h"
+#include <iostream>
 
 FreeTypeFont::FreeTypeFont(std::string filename, int size)
 {
     FT_Error err = FT_Init_FreeType(&ft_lib);
 
     err = FT_New_Face(ft_lib, filename.c_str(), 0, &ft_face);
+    if (err)
+    {
+        std::cerr << "Unable to load TrueType font: " << filename << std::endl;
+        exit(-1);
+    }
     this->mono_height = size;
     this->mono_width = size;
 
@@ -27,7 +33,7 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
         int width = ft_face->glyph->bitmap.width;
         /* Center the bitmap horizontally into our fixed size buffer */
         int offsetx = (mono_width - width) / 2;
-        /* Match the botom with the bottom of the fixed size buffer */
+        /* TODO: Why does this formula work? */
         int offsety = (mono_height - ft_face->glyph->bitmap_top - (mono_height / 4));
 
         /* Copy data from source buffer into our fixed size buffer */
@@ -42,7 +48,6 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
                 {
                     letter_buf[idx] = val;
                 }
-
             }
         }
         /* Create SDL_Surface from bitmap */

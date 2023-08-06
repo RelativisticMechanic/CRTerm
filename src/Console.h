@@ -93,7 +93,7 @@ public:
 
 	Console(CRTermConfiguration*, ConsoleFont*);
 	void PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_color);
-	unsigned char ReadChar(int x, int y);
+	ConsoleChar ReadChar(int x, int y);
 	void PutCharExt(ConsoleChar c, int fore_color, int back_color);
 	void PutChar(ConsoleChar c);
 	void Puts(std::string s);
