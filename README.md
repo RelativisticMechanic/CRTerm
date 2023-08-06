@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/ksqojxpjtqo3k4bk?svg=true)](https://ci.appveyor.com/project/RelativisticMechanic/crterm) [![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/RelativisticMechanic/CRTerm/releases/tag/0.2.8)
+[![Build status](https://ci.appveyor.com/api/projects/status/ksqojxpjtqo3k4bk?svg=true)](https://ci.appveyor.com/project/RelativisticMechanic/crterm) [![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/RelativisticMechanic/CRTerm/releases/tag/0.3.0)
 
 
 <img align="right" width="200" height="200" src="images/crterm-logo.png">
@@ -27,7 +27,7 @@ The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the
 
 The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. 
 
-The current version is 0.2.8, it is still in active development and may not replace your terminal application.
+The current version is 0.3.0, it is still in active development and may not replace your terminal application.
 
 ## Features
 
@@ -35,7 +35,7 @@ The current version is 0.2.8, it is still in active development and may not repl
 * Mouse selection (copy, and paste)
 * 16-color palette
 * Scrollback history
-* TrueType support (WIP, will come in next release)
+* TrueType support
 
 Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
