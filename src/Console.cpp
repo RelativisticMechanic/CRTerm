@@ -38,6 +38,7 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	/* Load the font and the background image */
 	this->console_font = fnt;
 	this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
+	this->noise_texture = GPU_LoadImage("ui/noise.png");
 
 	/* Separate render buffer for rendering the console before scaling it. */
 	this->render_buffer = GPU_CreateImage(this->console_resolution_x, this->console_resolution_y, GPU_FORMAT_RGBA);
@@ -408,7 +409,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	{
 		GPU_Rect scrollbar;
 		scrollbar.h = (((float)this->console_h) / ((float)this->last_line + this->console_h)) * (this->render_buffer->h);
-		scrollbar.y = scrollbar.h * 0.5 * ((float)this->start_line / (float)(this->last_line + 1.0));
+		scrollbar.y = scrollbar.h * (((float)this->start_line + 1.0) / (float)(this->last_line + 1.0));
 		scrollbar.w = 8;
 		scrollbar.x = this->render_buffer->w - 8;
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());
@@ -467,6 +468,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "back_color"), 3, 1, this->color_scheme[this->default_back_color].returnArray());
 	/* Pass the CRT background image to blend with */
 	GPU_SetShaderImage(this->crt_background, GPU_GetUniformLocation(this->crt_shader_id, "crt_background"), 1);
+	GPU_SetShaderImage(this->noise_texture, GPU_GetUniformLocation(this->crt_shader_id, "noise_texture"), 2);
 	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();

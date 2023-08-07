@@ -642,9 +642,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="icon.png">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="crterm.ico">
       <Filter>Resource Files</Filter>
     </Image>

@@ -6,6 +6,8 @@ out vec4 fragColor;
 
 uniform sampler2D tex;
 uniform sampler2D crt_background;
+uniform sampler2D noise_texture;
+
 uniform float time;
 uniform vec2 resolution;
 
@@ -25,7 +27,7 @@ const float crt_noise_fraction = 0.10;
 uniform float warp; 
 float scan = 0.75;
 float scanline_speed = 0.5;
-float scanline_intensity = 0.15;
+float scanline_intensity = 0.10;
 float scanline_spread = 0.2;
 float vigenette_intensity = 0.25;
 float vignette_brightness = 50.0;
@@ -37,34 +39,34 @@ vec2 margin = vec2(0.03, 0.03);
 
 
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
-vec4 crtGlow(in vec2 uv, in float blurSize)
+vec4 crtGlow(in sampler2D texture, in vec2 uv, in float blurSize)
 {
     vec4 sum = vec4(0);
     vec2 texcoord = uv.xy;
     int j;
     int i;
 
-    sum += texture(tex, vec2(texcoord.x - 4.0*blurSize, texcoord.y)) * 0.05;
-    sum += texture(tex, vec2(texcoord.x - 3.0*blurSize, texcoord.y)) * 0.09;
-    sum += texture(tex, vec2(texcoord.x - 2.0*blurSize, texcoord.y)) * 0.12;
-    sum += texture(tex, vec2(texcoord.x - blurSize, texcoord.y)) * 0.15;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y)) * 0.16;
-    sum += texture(tex, vec2(texcoord.x + blurSize, texcoord.y)) * 0.15;
-    sum += texture(tex, vec2(texcoord.x + 2.0*blurSize, texcoord.y)) * 0.12;
-    sum += texture(tex, vec2(texcoord.x + 3.0*blurSize, texcoord.y)) * 0.09;
-    sum += texture(tex, vec2(texcoord.x + 4.0*blurSize, texcoord.y)) * 0.05;
+    sum += texture(texture, vec2(texcoord.x - 4.0*blurSize, texcoord.y)) * 0.05;
+    sum += texture(texture, vec2(texcoord.x - 3.0*blurSize, texcoord.y)) * 0.09;
+    sum += texture(texture, vec2(texcoord.x - 2.0*blurSize, texcoord.y)) * 0.12;
+    sum += texture(texture, vec2(texcoord.x - blurSize, texcoord.y)) * 0.15;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y)) * 0.16;
+    sum += texture(texture, vec2(texcoord.x + blurSize, texcoord.y)) * 0.15;
+    sum += texture(texture, vec2(texcoord.x + 2.0*blurSize, texcoord.y)) * 0.12;
+    sum += texture(texture, vec2(texcoord.x + 3.0*blurSize, texcoord.y)) * 0.09;
+    sum += texture(texture, vec2(texcoord.x + 4.0*blurSize, texcoord.y)) * 0.05;
         
-    sum += texture(tex, vec2(texcoord.x, texcoord.y - 4.0*blurSize)) * 0.05;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y - 3.0*blurSize)) * 0.09;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y - 2.0*blurSize)) * 0.12;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y - blurSize)) * 0.15;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y)) * 0.16;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y + blurSize)) * 0.15;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y + 2.0*blurSize)) * 0.12;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;
-    sum += texture(tex, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y - 4.0*blurSize)) * 0.05;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y - 3.0*blurSize)) * 0.09;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y - 2.0*blurSize)) * 0.12;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y - blurSize)) * 0.15;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y)) * 0.16;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y + blurSize)) * 0.15;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y + 2.0*blurSize)) * 0.12;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;
+    sum += texture(texture, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;
 
-    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*speed)) + texture(tex, texcoord);
+    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*speed)) + texture(texture, texcoord);
     
     return result;
 }
@@ -151,12 +153,11 @@ vec4 crtFrame(in vec2 staticCoords, in vec2 uv)
     /* Sample glow + blur for a decent reflection of the content on frame */
     for(int i = 0; i < 20; i++)
     {
-        color = mix(color, crtGlow(staticCoords - (i/256.0)*normal, 1/256.0).rgb, 0.01);
+        color = mix(color, crtGlow(tex, staticCoords - (i/256.0)*normal, 1/256.0).rgb, 0.01);
     }
 
     return vec4(color*alpha, alpha);
 }
-
 /* End of cool-retro-term code */
 
 void main(void)
@@ -176,11 +177,17 @@ void main(void)
     }
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
-    	fragColor = vec4(mix(crtGlow(uv, blurSizeDefault).rgb, vec3(0.0),apply),1.0);
-        fragColor = vec4(mix(fragColor.rgb, length(texture(crt_background, uv).rgb)*back_color, background_brightness),1.0);
-        /* Add a scanline going up and down */
-        fragColor.rgb += scanline_intensity * exp(-1.0*abs((1/scanline_spread) * sin((uv.y - abs(cos(scanline_speed*time)))))) * back_color;
+        /* Add glow effect */
+    	fragColor = vec4(mix(crtGlow(tex, uv, blurSizeDefault).rgb, vec3(0.0),apply),1.0);
+        /* Add glowy noise */
+        fragColor += 0.05 * vec4(back_color, 1.0) * length(crtGlow(noise_texture, uv, blurSizeDefault));
+        /* Add scanline */
+        fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;
+        /* Mix with background image */
+        fragColor = vec4(mix(fragColor.rgb, (texture(crt_background, uv).rgb), background_brightness),1.0);
+        /* Add noise */
         fragColor.rgb = mix(fragColor.rgb, vec3(crtNoise(uv, time)), crt_noise_fraction);
+        /* Add vigenette */
         fragColor.rgb = vigenette(uv, fragColor.rgb);
     }
 }

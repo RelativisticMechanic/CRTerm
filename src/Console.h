@@ -77,6 +77,7 @@ public:
 	int console_w, console_h;
 	ConsoleFont* console_font;
 	GPU_Image* crt_background;
+	GPU_Image* noise_texture;
 	int font_w, font_h;
 	int cursor_x, cursor_y;
 	/* Actual resolution of the console (in pixels) */
