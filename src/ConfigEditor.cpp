@@ -10,7 +10,7 @@ void ConfigEditor::Render(void)
     ImGui::Begin("Configuration Editor", 0, ImGuiWindowFlags_AlwaysAutoResize);
 
     /* Font Image */
-    ImGui::Text("Font Image");
+    ImGui::Text("Font Image/TTF");
     ImGui::SameLine();
     ImGui::InputText("##font_image", &(cfg->bitmap_font_file));
     ImGui::SameLine();
@@ -32,6 +32,10 @@ void ConfigEditor::Render(void)
     ImGui::Text("Font Scale");
     ImGui::SameLine();
     ImGui::InputFloat("##font_scale", &(cfg->font_scale));
+
+    ImGui::Text("Full Screen");
+    ImGui::SameLine();
+    ImGui::Checkbox("##fullscren", &(cfg->fullscreen));
 
     ImGui::Text("Console Width");
     ImGui::SameLine();

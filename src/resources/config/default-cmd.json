@@ -1,9 +1,9 @@
 {
-    "font": "VGA.ttf",
+    "font": "ProggySquare.ttf",
     "font_scale": 1.5,
     "console_width": 90,
     "console_height": 30,
-    "background": "crt.png",
+    "background": "background.png",
     "text_shader": "shaders/text",
     "crt_shader": "shaders/crt",
     "crt_warp": 1.00,
@@ -12,6 +12,7 @@
     "default_fg": 2,
     "default_bg": 2,
     "maxlines": 1000,
+    "fullscreen": false,
 
     "color_scheme":
     [

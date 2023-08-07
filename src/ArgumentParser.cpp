@@ -29,8 +29,27 @@ void ArgumentParser::Parse(int argc, char** argv)
 		std::string current_arg = std::string(argv[i]);
 		if (this->parser_state == ARGUMENT_ATTR)
 		{
-			this->argmap[this->processing_arg] = current_arg;
-			this->parser_state = ARGUMENT_NORMAL;
+			if (current_arg[0] == '-')
+			{
+				/* This means that the argument has not been provided. */
+				/* Add this to the dictionary and move on */
+				this->argmap[this->processing_arg] = "None";
+				current_arg.erase(0, 1);
+				if (std::find(this->expected_args.begin(), this->expected_args.end(), current_arg) != this->expected_args.end())
+				{
+					this->parser_state = ARGUMENT_ATTR;
+					this->processing_arg = current_arg;
+				}
+				else
+				{
+					unrecognisedArg(current_arg);
+				}
+			}
+			else
+			{
+				this->argmap[this->processing_arg] = current_arg;
+				this->parser_state = ARGUMENT_NORMAL;
+			}
 		}
 		else 
 		{
@@ -109,5 +128,13 @@ void ArgumentParser::GetArgument(std::string arg, float& result)
 		{
 			invalidArg(arg, this->argmap[arg]);
 		}
+	}
+}
+
+void ArgumentParser::GetArgument(std::string arg, bool& result)
+{
+	if (this->argmap.find(arg) != this->argmap.end())
+	{
+		result = true;
 	}
 }

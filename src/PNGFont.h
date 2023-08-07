@@ -1,3 +1,8 @@
+/*
+	This is the PNGFont class, it implements a bitmap style font stored in a PNG file and glyphs
+	are extracted from it as per their ASCII indexes.
+*/
+
 #ifndef PNGFONT_H
 #define PNGFONT_H
 

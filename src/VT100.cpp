@@ -591,7 +591,43 @@ void VT100::VT100Take(unsigned char c)
 
 void VT100::VT100Putc(unsigned char c)
 {
-	con->PutCharExt(c, this->fg, this->bg);
+	/* Are we in midst of a UTF-8 character? Recall that UTF-8 characters can usually be made of 1,2,3 or 4 bytes */
+	if (utf8_bytes_left == 0)
+	{
+		int unicode_check = (c & 0b11110000) >> 4;
+
+		/* Is 'c' unicode? */
+		switch (unicode_check)
+		{
+		case 0b1100:
+			/* UTF-8 1 byte left */
+			utf8_bytes_left = 1;
+			break;
+		case 0b1110:
+			/* UTF-8 2 bytes left */
+			utf8_bytes_left = 2;
+			break;
+		case 0b1111:
+			/* UTF-8 3 bytes left */
+			utf8_bytes_left = 3;
+			break;
+		default:
+			/* Not UTF-8, print as is */
+			con->PutCharExt(c, this->fg, this->bg);
+			break;
+		}
+	}
+	/* Yes, we are, decrement. */
+	else
+	{
+		/* Skip this byte as it is unicode */
+		utf8_bytes_left -= 1;
+		/* Draw ASCII block in place of all unicode characters */
+		if (utf8_bytes_left == 0)
+		{
+			con->PutCharExt(219, this->fg, this->bg);
+		}
+	}
 }
 
 void VT100::VT100HandleEvent(SDL_Event ev)

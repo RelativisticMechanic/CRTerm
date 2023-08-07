@@ -30,6 +30,7 @@ public:
 	void GetArgument(std::string, std::string&);
 	void GetArgument(std::string, float&);
 	void GetArgument(std::string, int&);
+	void GetArgument(std::string arg, bool& result);
 };
 
 #endif

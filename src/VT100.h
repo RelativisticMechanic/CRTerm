@@ -152,6 +152,9 @@ public:
 	/* Required for mouse interactivty */
 	float font_scale;
 
+	/* How many bytes to read into unicode? Right now, we just skip them and print an ASCII block at the end. */
+	int utf8_bytes_left = 0;
+
 	VT100(CRTermConfiguration*, ConsoleFont*, GPU_Target*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);

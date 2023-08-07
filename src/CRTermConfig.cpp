@@ -57,6 +57,8 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		this->default_back_color = configuration_data.at("default_bg");
 		this->crt_warp = configuration_data.at("crt_warp");
 		this->maxlines = configuration_data.at("maxlines");
+		this->fullscreen = configuration_data.at("fullscreen");
+
 		int i = 0;
 		for (auto& color : configuration_data.at("color_scheme"))
 		{
@@ -90,7 +92,7 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 	}
 	catch (...)
 	{
-		MessageBox(GetActiveWindow(), L"An unknown error occurred", L"Error loading default.json", MB_OK | MB_ICONERROR);
+		MessageBox(GetActiveWindow(), L"An unknown error occurred. An attribute must be missing.", L"Error loading default.json", MB_OK | MB_ICONERROR);
 	}
 }
 
@@ -115,6 +117,7 @@ void CRTermConfiguration::Save(std::string filename)
 	output_json["default_bg"] = this->default_back_color;
 	output_json["crt_warp"] = this->crt_warp;
 	output_json["maxlines"] = this->maxlines;
+	output_json["fullscreen"] = this->fullscreen;
 
 	int color_scheme_arr[16][3];
 

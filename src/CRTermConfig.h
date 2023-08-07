@@ -33,6 +33,7 @@ public:
 	int font_width;
 	int font_height;
 	float font_scale;
+	bool fullscreen;
 	int console_width;
 	int console_height;
 	int default_fore_color;

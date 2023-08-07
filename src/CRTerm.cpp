@@ -1,4 +1,5 @@
 /* The entry point of our glorious terminal! */
+
 #include <Windows.h>
 #include <dwmapi.h>
 #include <iostream>
@@ -34,23 +35,25 @@ int main(int argc, char* argv[])
 {
 	/* Read the path of the configuration JSON from "default" and then load it */
 	CRTermConfiguration* cfg = new CRTermConfiguration(GetDefaultConfigJSON());
-	
+
 	/* Parse arguments */
 	ArgumentParser arg_parse;
 	arg_parse.AddArgument("fs");
 	arg_parse.AddArgument("cw");
 	arg_parse.AddArgument("ch");
+	arg_parse.AddArgument("fscrn");
 	arg_parse.AddArgument("cmd", true);
-
 	arg_parse.Parse(argc, argv);
 
 	arg_parse.GetArgument("cw", cfg->console_width);
 	arg_parse.GetArgument("ch", cfg->console_height);
 	arg_parse.GetArgument("fs", cfg->font_scale);
 	arg_parse.GetArgument("cmd", cfg->shell_command);
+	arg_parse.GetArgument("fscrn", cfg->fullscreen);
 
 	/* Create the screen */
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
+
 	/* Default to 640x480, we'll calculate the required terminal resolution later. */
 	GPU_Target* screen = GPU_Init(640, 480, GPU_DEFAULT_INIT_FLAGS);
 	if (screen == NULL)
@@ -58,6 +61,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	/* Load up the font */
 	ConsoleFont* fnt;
 	/* Check if font if TTF or PNG */
 	if (endsWith(cfg->bitmap_font_file, ".png"))
@@ -66,8 +70,7 @@ int main(int argc, char* argv[])
 	}
 	else if (endsWith(cfg->bitmap_font_file, ".ttf"))
 	{
-		/* Ignore font size, default to 16. Scale will handle. */
-		fnt = new FreeTypeFont(cfg->bitmap_font_file, 16);
+		fnt = new FreeTypeFont(cfg->bitmap_font_file, TRUETYPE_DEFAULT_FONT_SIZE);
 	}
 	else
 	{
@@ -77,11 +80,30 @@ int main(int argc, char* argv[])
 
 	/* Calculate the required screen resolution from the font */
 	int resolution_x, resolution_y;
-	resolution_x = (int)(fnt->GetXAdvance() * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;
-	resolution_y = (int)(fnt->GetYAdvance() * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT + SIDES_WIDTH;
+
+	/* If full screen is chosen, then we must modify console width and height */
+	if (cfg->fullscreen)
+	{
+		int sw = GetSystemMetrics(SM_CXSCREEN);
+		int sh = GetSystemMetrics(SM_CYSCREEN);
+
+		resolution_x = sw;
+		resolution_y = sh;
+
+		cfg->console_width = sw / (fnt->GetXAdvance() * cfg->font_scale);
+		cfg->console_height = sh / (fnt->GetYAdvance() * cfg->font_scale);
+	}
+	else 
+	{
+		resolution_x = (int)(fnt->GetXAdvance() * cfg->font_scale * cfg->console_width) + 2 * SIDES_WIDTH;
+		resolution_y = (int)(fnt->GetYAdvance() * cfg->font_scale * cfg->console_height) + TITLE_BAR_HEIGHT + SIDES_WIDTH;
+	}
 	
-	/* Set the resolution */
 	GPU_SetWindowResolution(resolution_x, resolution_y);
+	
+	/* If full screen go full screen! */
+	if(cfg->fullscreen)
+		GPU_SetFullscreen(true, true);
 
 	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
 
@@ -121,6 +143,7 @@ int main(int argc, char* argv[])
 	cmenu->Add("Select Config");
 	cmenu->Add("Config Editor");
 	cmenu->Add("Send ^C");
+	cmenu->Add("Exit");
 
 #ifdef CRTERM_CUSTOM_TITLE_BAR
 	UI->AddElement(title);
@@ -213,6 +236,14 @@ void menuCallBack(int item, void* data)
 	case 4:
 		/* Send ^C */
 		term_instance->VT100Send("\x3");
+		break;
+	case 5:
+		/* Exit */
+		{
+			SDL_Event ev;
+			ev.type = SDL_QUIT;
+			SDL_PushEvent(&ev);
+		}
 		break;
 	default:
 		break;
