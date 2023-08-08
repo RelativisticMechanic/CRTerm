@@ -15,7 +15,8 @@ A CRT style terminal for Windows. Watch it in [action](https://www.youtube.com/w
 | -------------  | ------------------ | -------------------   | ----------------------- |
 |![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) |
 
-| UTF-8 Support |
+| UTF-8 Support (WIP) |
+| -----------   |
 | ![](images/utf8.png) |
 
 ## Motivation
