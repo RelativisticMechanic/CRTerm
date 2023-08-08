@@ -166,6 +166,7 @@ public:
 	VT100(CRTermConfiguration*, ConsoleFont*, GPU_Target*);
 	void VT100Take(unsigned char);
 	void VT100Putc(unsigned char);
+	void VT100Puts(std::string s);
 	void VT100Send(std::string);
 	void VT100HandleEvent(SDL_Event);
 	void VT100Shutdown();

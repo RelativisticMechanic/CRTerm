@@ -30,15 +30,17 @@ VT100::VT100(CRTermConfiguration* cfg, ConsoleFont* fnt, GPU_Target* render_targ
 	output_listener_thread = { reinterpret_cast<HANDLE>(_beginthread(outputListener, 0, this)) };
 	/* Start the process */
 	std::wstring process_name = std::wstring(cfg->shell_command.begin(), cfg->shell_command.end());
-	con->Puts(CRTERM_VERSION_STRING);
-	con->Puts("\n");
-	con->Puts(CRTERM_CREDIT_STRING);
-	con->Puts("Terminal initialized.\n");
-	con->Puts("Loading shell...");
+
+	/* Intro screen */
+	VT100Puts(CRTERM_VERSION_STRING);
+	VT100Puts("\n");
+	VT100Puts(CRTERM_CREDIT_STRING);
+	VT100Puts("Terminal initialized.\n");
+	VT100Puts("Loading shell...");
 	HRESULT ok = SpawnProcessinConsole((wchar_t*)process_name.c_str(), hPC, &cmd_process);
 	if (ok != S_OK)
 	{
-		con->Puts("Failed to initialize provided shell application.\n");
+		VT100Puts("Failed to initialize provided shell application.\n");
 	}
 }
 
@@ -589,6 +591,13 @@ void VT100::VT100Take(unsigned char c)
 	}
 }
 
+void VT100::VT100Puts(std::string s)
+{
+	for (int i = 0; i < s.length(); i++)
+	{
+		this->VT100Putc(s[i]);
+	}
+}
 void VT100::VT100Putc(unsigned char c)
 {
 	/* Are we in midst of a UTF-8 character? Recall that UTF-8 characters can usually be made of 1,2,3 or 4 bytes */
