@@ -1,4 +1,6 @@
-## Development Notes for CRTerm
+# DEVLOG
+
+## Rolling your own Terminal emulator
 
 I started this project when I failed to run Cool-Retro-Term on my Windows machine. It seems to have require Qt6 and X Server which failed to run on my WSL installation. Another thing was of course, I'd have to run it inside the WSL container, which means I wouldn't be able to run Powershell or Cmd in it. 
 
@@ -166,8 +168,9 @@ void VT100::VT100Putc(unsigned char c)
 }
 
 ```
-
 Most of this follows from: https://en.wikipedia.org/wiki/UTF-8#Encoding
+
+And of course, the value in "utf8_char" is stored in the Console::buffer, which is eventually passed to FreeType's FT_Get_Char_Index() and FT_Render_Glyph() in `src/TrueType.cpp` during Console::Render() every frame. If the character is one of the first 256 ASCII characters, we return it from the glyphs[] cache, otherwise we look in the LRU cache (FreeTypeFont::unicode_cache) for it. If it does not exist, we dynamically render a glyph and store it in the LRU (this process is slow, so that's why an LRU was needed).
 
 ## Sending Keycodes to the Program
 
