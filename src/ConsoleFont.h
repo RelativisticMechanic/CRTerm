@@ -3,11 +3,14 @@
 
 #include "SDL_gpu.h"
 #include <stdint.h>
-/*
-	In future when we implement UTF-8
-*/
 
-typedef unsigned char ConsoleChar;
+/* ASCII 219 - Block */
+#define DEFAULT_INVALID_CHAR 219
+/*
+	ConsoleChar is UTF-32 encoded character.
+	ConsoleAttrib's encoding is given in Console.
+*/
+typedef uint32_t ConsoleChar;
 typedef uint32_t ConsoleAttrib;
 
 class ConsoleFont

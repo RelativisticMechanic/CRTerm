@@ -45,7 +45,10 @@ int PNGBitmapFont::GetYAdvance()
 
 GPU_Image* PNGBitmapFont::GetGlyph(ConsoleChar c)
 {
-	return this->characters[c];
+	if (c < 256)
+		return this->characters[c];
+	else
+		return this->characters[DEFAULT_INVALID_CHAR];
 }
 
 PNGBitmapFont::~PNGBitmapFont()

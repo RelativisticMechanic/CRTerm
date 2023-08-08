@@ -102,17 +102,24 @@ public:
 		{ SDLK_RIGHT, "\x1B[C" },
 		{ SDLK_LEFT, "\x1B[D" },
 		{ SDLK_DELETE, "\b" },
+		{ SDLK_HOME, "\x1B[1~" },
+		{ SDLK_INSERT, "\x1B[2~"},
+		{ SDLK_DELETE, "\x1B[3~"},
+		{ SDLK_END, "\x1B[4~" },
+		{ SDLK_PAGEUP, "\x1B[5~" },
+		{ SDLK_PAGEDOWN, "\x1B[6~" },
 		{ SDLK_F1, "\x1B[11~" },
 		{ SDLK_F2, "\x1B[12~" },
-		{ SDLK_F3, "\x1B[14~" },
-		{ SDLK_F4, "\x1B[15~" },
-		{ SDLK_F5, "\x1B[16~" },
+		{ SDLK_F3, "\x1B[13~" },
+		{ SDLK_F4, "\x1B[14" },
+		{ SDLK_F5, "\x1B[15~" },
 		{ SDLK_F6, "\x1B[17~" },
 		{ SDLK_F7, "\x1B[18~" },
 		{ SDLK_F8, "\x1B[19~" },
 		{ SDLK_F9, "\x1B[20~" },
 		{ SDLK_F10, "\x1B[21~" },
-		{ SDLK_HOME, "\x1B[H" }
+		{ SDLK_F11, "\x1B[23~" },
+		{ SDLK_F12, "\x1B[24~"}
 	};
 
 	/* Control Key map, for stuff like ^C, ^O, etc. */
@@ -154,6 +161,7 @@ public:
 
 	/* How many bytes to read into unicode? Right now, we just skip them and print an ASCII block at the end. */
 	int utf8_bytes_left = 0;
+	ConsoleChar utf8_char;
 
 	VT100(CRTermConfiguration*, ConsoleFont*, GPU_Target*);
 	void VT100Take(unsigned char);

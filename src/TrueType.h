@@ -21,6 +21,14 @@
 
 #include "SDL_gpu.h"
 #include "ConsoleFont.h"
+#include "LRUCache.h"
+
+typedef struct 
+{
+	SDL_Surface* surface;
+	GPU_Image* image;
+	uint8_t* data;
+} GlyphData;
 
 class FreeTypeFont : public ConsoleFont
 {
@@ -33,12 +41,12 @@ public:
 	~FreeTypeFont();
 
 private:
+	LRUCache<ConsoleChar, GlyphData*>* unicode_cache;
 	FT_Library ft_lib;
 	FT_Face ft_face;
-	SDL_Surface* glyph_surfaces[256];
-	GPU_Image* glyph_images[256];
-	uint8_t* glyph_data[256];
+	GlyphData glyphs[256];
 	int mono_width;
 	int mono_height;
+	void GenerateGlyph(GlyphData* glyph, uint32_t codepoint);
 };
 #endif

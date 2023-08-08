@@ -11,9 +11,9 @@ A CRT style terminal for Windows. Watch it in [action](https://youtu.be/oOITpIzd
 
 <b>Note: This is a WIP, it is not ready for production!</b>
 
-| Amber with WSL | Green with cmd.exe | White with Powershell | XTerm 256 Color Support |
-| -------------  | ------------------ | -------------------   | ----------------------- |
-|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) |
+| Amber with WSL | Green with cmd.exe | White with Powershell | XTerm 256 Color Support | UTF-8 (WIP) |
+| -------------  | ------------------ | -------------------   | ----------------------- | ----------  | 
+|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) | | ![](images/utf8.png) |
 
 ## Motivation
 
@@ -42,7 +42,7 @@ Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
 ## Upcoming
 
-* UTF-8 Support
+* UTF-8 Support (Work in progress)
 * Support for certain iTerm sequences to allow graphics rendering in the terminal
 
 ## Building

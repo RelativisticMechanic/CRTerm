@@ -592,24 +592,26 @@ void VT100::VT100Take(unsigned char c)
 void VT100::VT100Putc(unsigned char c)
 {
 	/* Are we in midst of a UTF-8 character? Recall that UTF-8 characters can usually be made of 1,2,3 or 4 bytes */
-	if (utf8_bytes_left == 0)
+	if (!utf8_bytes_left)
 	{
 		int unicode_check = (c & 0b11110000) >> 4;
-
 		/* Is 'c' unicode? */
 		switch (unicode_check)
 		{
 		case 0b1100:
 			/* UTF-8 1 byte left */
 			utf8_bytes_left = 1;
+			utf8_char = (c & 0b00011111) << 6;
 			break;
 		case 0b1110:
 			/* UTF-8 2 bytes left */
 			utf8_bytes_left = 2;
+			utf8_char = (c & 0b00001111) << 12;
 			break;
 		case 0b1111:
 			/* UTF-8 3 bytes left */
 			utf8_bytes_left = 3;
+			utf8_char = (c << 0b0000011) << 18;
 			break;
 		default:
 			/* Not UTF-8, print as is */
@@ -622,10 +624,25 @@ void VT100::VT100Putc(unsigned char c)
 	{
 		/* Skip this byte as it is unicode */
 		utf8_bytes_left -= 1;
-		/* Draw ASCII block in place of all unicode characters */
+		/* Store it */
+		switch (utf8_bytes_left)
+		{
+		case 0:
+			utf8_char |= (c & 0b111111);
+			break;
+		case 1:
+			utf8_char |= (c & 0b111111) << 6;
+			break;
+		case 2:
+			utf8_char |= (c & 0b111111) << 12;
+			break;
+		default:
+			break;
+		}
+		/* Draw the UTF-8 Char */
 		if (utf8_bytes_left == 0)
 		{
-			con->PutCharExt(219, this->fg, this->bg);
+			con->PutCharExt(utf8_char, this->fg, this->bg);
 		}
 	}
 }

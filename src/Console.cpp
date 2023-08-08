@@ -60,16 +60,22 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 		this->color_scheme[i] = ConsoleColor(cfg->color_scheme[i].r, cfg->color_scheme[i].g, cfg->color_scheme[i].b);
 	}
 
+	/* Generate the 256-color palette */
+	/* The first 16 colors correspond to the color scheme */
+	for (int i = 0; i < 16; i++)
+	{
+		this->color_256[i] = this->color_scheme[i];
+	}
+	/* Load the rest 240 colors from the XTerm palette */
+	for (int i = 16; i < 256; i++)
+	{
+		this->color_256[i] = XTermPaletteGetColor(i);
+	}
+
 	/* Set CRT effect parameters from configuration */
 	this->crt_warp = cfg->crt_warp;
 	this->start_line = 0;
 	this->last_line = 0;
-
-	/* Generate the 256-color palette */
-	for (int i = 0; i < 256; i++)
-	{
-		this->color_256[i] = XTermPaletteGetColor(i);
-	}
 
 	/* Clear the console */
 	this->Clear();
@@ -217,9 +223,8 @@ void Console::PutChar(ConsoleChar c)
 	Console::PutCharExt(c, this->default_fore_color, this->default_back_color);
 }
 
-void Console::PutCharExt(ConsoleChar chr, int fore_color, int back_color)
+void Console::PutCharExt(ConsoleChar c, int fore_color, int back_color)
 {
-	uint8_t c = (uint8_t)chr;
 	if (c == '\n')
 	{
 		this->cursor_y += 1;
@@ -291,7 +296,8 @@ void Console::PlaceChar(int x, int y, ConsoleChar c, int fore_color, int back_co
 	this->buffer[start_line * this->console_w + y * this->console_w + x] = c;
 
 	ConsoleAttrib attrib = CONSTRUCT_ATTRIBUTE(fore_color, back_color);
-	/* If fore-color is greater than 15, we are in 8-bit color mode, subtract 16 */
+	/* If fore-color is greater than 15, we are in 8-bit color mode, i.e.
+	 ESC 38;5;{ID} or ESC 48;5{ID} was used to set the color, subtract 16 */
 	if (fore_color >= 16)
 	{
 		fore_color -= 16;
@@ -405,11 +411,11 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 	}
 
 	/* Draw the scroll bar if we are scrolling i.e. last_line != start_line and the user has scrolled up */
-	if (start_line != last_line)
+	if (start_line != last_line && this->last_line != 0)
 	{
 		GPU_Rect scrollbar;
 		scrollbar.h = (((float)this->console_h) / ((float)this->last_line + this->console_h)) * (this->render_buffer->h);
-		scrollbar.y = scrollbar.h * (((float)this->start_line + 1.0) / (float)(this->last_line + 1.0));
+		scrollbar.y = (((float)this->start_line) / (float)(this->last_line)) * this->render_buffer->h;
 		scrollbar.w = 8;
 		scrollbar.x = this->render_buffer->w - 8;
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->color_scheme[this->default_fore_color].returnArray());

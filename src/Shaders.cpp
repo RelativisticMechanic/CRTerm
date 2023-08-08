@@ -12,20 +12,29 @@ uint32_t loadShader(GPU_ShaderEnum type, const char* filename)
 		GPU_PushErrorCode("loadShader", GPU_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);
 		return 0;
 	}
+	/* Get size of shader file */
 	file_size = SDL_RWseek(rwops, 0, SEEK_END);
+	/* Reset back to beginning */
 	SDL_RWseek(rwops, 0, SEEK_SET);
 
-	char* source = (char*)malloc((file_size + 1) * sizeof(char));
+	/* Load the source */
+	char* source = (char*)malloc((file_size + 1 /* 1 byte for '\0' */) * sizeof(char));
 	SDL_RWread(rwops, source, sizeof(char), file_size);
-
 	source[file_size] = '\0';
+
+	/* Compile the shader */
 	shader = GPU_CompileShader(type, source);
+
+	/* Free resources */
 	free(source);
+	SDL_RWclose(rwops);
+
 	return shader;
 }
 
 GPU_ShaderBlock loadShaderProgram(uint32_t* p, std::string name)
 {
+	/* Load the vertex and fragment shaders */
 	std::string vsname = name + ".vs.glsl";
 	std::string fsname = name + ".fs.glsl";
 	

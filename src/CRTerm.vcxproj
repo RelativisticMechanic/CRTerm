@@ -223,6 +223,7 @@
     <ClInclude Include="lib\freetype\include\freetype\tttables.h" />
     <ClInclude Include="lib\freetype\include\freetype\tttags.h" />
     <ClInclude Include="lib\freetype\include\ft2build.h" />
+    <ClInclude Include="LRUCache.h" />
     <ClInclude Include="PNGFont.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TrueType.h" />
