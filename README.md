@@ -16,7 +16,7 @@ A CRT style terminal for Windows. Watch it in [action](https://www.youtube.com/w
 |![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) |
 
 
-| UTF-8 Support (WIP)- | Vim                 | Matrix                  | Mapscii                 |
+| UTF-8 Support (WIP) | Vim                 | Matrix                  | Mapscii                 |
 | ------------------   | ------------------- | ----------------------- | ----------------------- |
 | ![](images/utf8.png) | ![](images/vim.png) | ![](images/cmatrix.png) | ![](images/mapscii.png) |
 
@@ -32,7 +32,7 @@ The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the
 
 The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. 
 
-The current version is 0.3.0, it is still in active development and may not replace your terminal application.
+The current version is 0.3.8, it is still in active development and may not replace your terminal application.
 
 ## Features
 
@@ -42,14 +42,30 @@ The current version is 0.3.0, it is still in active development and may not repl
 * Scrollback history
 * TrueType support
 * 256 Color (in upcoming release)
+* UTF-8 Support (Work in progress)
 
 Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
 ## Upcoming
 
-* UTF-8 Support (Work in progress)
 * Support for certain iTerm sequences to allow graphics rendering in the terminal
 
 ## Building
 
-Visual Studio 2022 is required, it requires C++17. Windows 10 SDK (June 2018)+ is needed as it uses CreatePseudoConsole() and ConPTY.
+Visual Studio 2017/2022 is required, it uses C++17. Windows 10 SDK (June 2018)+ is needed as it uses CreatePseudoConsole() and ConPTY. 
+
+All dependencies are present in the repo, they are:
+
+- ImGui
+- SDL2
+- SDL2-GPU
+- FreeType
+
+The header only dependencies are:
+
+- Nlohmann/JSON
+- Hocevar/PDF
+
+Don't forget to add the DLLs to the Debug/ folder whilst running!
+
+Have fun!
