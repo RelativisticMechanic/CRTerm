@@ -13,7 +13,7 @@ A CRT style terminal for Windows. Watch it in [action](https://www.youtube.com/w
 
 | Amber with WSL | Green with cmd.exe | White with Powershell | XTerm 256 Color Support | UTF-8 (WIP) |
 | -------------  | ------------------ | -------------------   | ----------------------- | ----------  | 
-|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) | | ![](images/utf8.png) |
+|![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) | ![](images/utf8.png) |
 
 ## Motivation
 
