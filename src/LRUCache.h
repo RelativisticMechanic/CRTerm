@@ -19,12 +19,12 @@ public:
 		if (size < DEFAULT_LRU_CACHE_SIZE)
 		{
 			this->cache_size = DEFAULT_LRU_CACHE_SIZE;
-			this->DestroyCallBack = DestroyCallBack;
 		}
 		else
 		{
 			this->cache_size = size;
 		}
+		this->DestroyCallBack = DestroyCallBack;
 	}
 
 	void Add(KeyType key, ValueType value)

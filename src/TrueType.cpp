@@ -11,6 +11,7 @@ void DestroyGlyph(GlyphData* glyph)
     free(glyph->data);
 }
 
+/* For freeing Glyphs dynamically created */
 void DestroyDynamicGlyph(GlyphData* glyph)
 {
     DestroyGlyph(glyph);
@@ -41,7 +42,7 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
         this->GenerateGlyph(&(this->glyphs[i]), i);
     }
 
-    this->unicode_cache = new LRUCache<ConsoleChar, GlyphData*>(100, DestroyDynamicGlyph);
+    this->unicode_cache = new LRUCache<ConsoleChar, GlyphData*>(TRUETYPE_DEFAULT_CACHE_SIZE, DestroyDynamicGlyph);
 }
 
 int FreeTypeFont::GetXAdvance()
