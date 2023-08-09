@@ -19,7 +19,7 @@ const float flicker_fraction = 0.15;
 
 // Theme settings
 uniform vec3 back_color;
-const vec4 frame_color = vec4(0.20, 0.21, 0.25, 1.0);
+const vec4 frame_color = vec4(0.4, 0.4, 0.4, 1.0);
 const float background_brightness = 0.25;
 const float crt_noise_fraction = 0.10;
 

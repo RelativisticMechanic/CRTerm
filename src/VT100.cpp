@@ -808,8 +808,35 @@ void VT100::VT100CopyToClipboard()
 		{
 			int y = i / this->con->console_w;
 			int x = i % this->con->console_w;
-			result += this->con->ReadChar(x, y);
+
+			/* Decode UTF-32 to UTF-8 */
+
+			uint32_t utf32 = this->con->ReadChar(x, y);
+			std::cout << "COPYING CHAR (UTF-32)" << (int)utf32 << std::endl;
+			if (utf32 < 0x80) 
+			{
+				result += (char)utf32;
+			}
+			else if (utf32 < 0x800) 
+			{   // 00000yyy yyxxxxxx
+				result += (char)(0b11000000 | (utf32 >> 6));
+				result += (char)(0b10000000 | (utf32 & 0x3f));
+			}
+			else if (utf32 < 0x10000) 
+			{  // zzzzyyyy yyxxxxxx
+				result += (char)(0b11100000 | (utf32 >> 12));			// 1110zzz
+				result += (char)(0b10000000 | ((utf32 >> 6) & 0x3f));	// 10yyyyy
+				result += (char)(0b10000000 | (utf32 & 0x3f));			// 10xxxxx
+			}
+			else if (utf32 < 0x200000) 
+			{ // 000uuuuu zzzzyyyy yyxxxxxx
+				result += (char)(0b11110000 | (utf32 >> 18));			// 11110uuu
+				result += (char)(0b10000000 | ((utf32 >> 12) & 0x3f));	// 10uuzzzz
+				result += (char)(0b10000000 | ((utf32 >> 6) & 0x3f));	// 10yyyyyy
+				result += (char)(0b10000000 | (utf32 & 0x3f));			// 10xxxxxx
+			}
 		}
+		std::cout << "-----" << std::endl;
 		CopyToClipboard(result);
 		this->is_selected = false;
 	}

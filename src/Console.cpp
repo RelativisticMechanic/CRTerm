@@ -346,7 +346,7 @@ void Console::DisableWrapAround()
 ConsoleChar Console::ReadChar(int x, int y)
 {
 	if (x < 0 || y < 0 || x >= this->console_w || y >= this->console_h)
-		return 0;
+		return ' ';
 	return this->buffer[(this->start_line + y) * this->console_w + x];
 }
 
