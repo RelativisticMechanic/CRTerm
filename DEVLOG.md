@@ -172,6 +172,8 @@ Most of this follows from: https://en.wikipedia.org/wiki/UTF-8#Encoding
 
 And of course, the value in "utf8_char" is stored in the Console::buffer, which is eventually passed to FreeType's FT_Get_Char_Index() and FT_Render_Glyph() in `src/TrueType.cpp` during Console::Render() every frame. If the character is one of the first 256 ASCII characters, we return it from the glyphs[] cache, otherwise we look in the LRU cache (FreeTypeFont::unicode_cache) for it. If it does not exist, we dynamically render a glyph and store it in the LRU (this process is slow, so that's why an LRU was needed).
 
+Another headache with Windows systems is that Windows internally implements wchar_t as UTF-16, so that means while copying and pasting we must use MultiByteToWideChar() and WideCharToMultiByte() functions from Windows API. 
+
 ## Sending Keycodes to the Program
 
 Just as VT100 implements a standard for output, it also implements a standard for input. I use a hash map to map various SDL keys to VT100 strings to be sent through the pipe "toProgram", located in `src/VT100.h`.
