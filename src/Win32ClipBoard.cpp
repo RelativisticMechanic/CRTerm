@@ -1,7 +1,7 @@
 #include "Win32ClipBoard.h"
 #include <iostream>
 #include <wchar.h>
-#include <locale.h>
+
 /* 
 	codecvt is deprecated in C++17 we must implement our own. 
 */
@@ -47,7 +47,7 @@ void CopyToClipboard(std::string s)
 	std::wstring converted_str = UTF8ToWCharString(s);
 	const wchar_t* result_cstr = converted_str.c_str();
 	
-	/* WCHAR_T stuff */
+	/* Copy WCHAR_T to buffer */
 	int len = wcslen(result_cstr);
 	HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, (len + 1) * sizeof(wchar_t));
 	wchar_t* buffer = (wchar_t*)GlobalLock(hMem);

@@ -1,5 +1,7 @@
 #version 330
 
+#define PI  3.14159265358
+#define TAU 6.28318530718
 in vec4 color;
 in vec2 texCoord;
 out vec4 fragColor;
@@ -11,11 +13,15 @@ uniform sampler2D noise_texture;
 uniform float time;
 uniform vec2 resolution;
 
+const float text_brightness_multiplier = 3.0;
+
 // Glow effect settings
-const float blurSizeDefault = 1.0/512.0;
+const float glow_size = 8.0;
+const float glow_directions = 16.0;
+const float glow_quality = 2.0;
 const float intensity = 1.0;
-const float speed = 30.0;
 const float flicker_fraction = 0.15;
+const float flicker_speed = 20.0;
 
 // Theme settings
 uniform vec3 back_color;
@@ -41,34 +47,20 @@ vec2 margin = vec2(0.03, 0.03);
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
 vec4 crtGlow(in sampler2D texture, in vec2 uv, in float blurSize)
 {
+    /* Apply Gaussian Blur */
     vec4 sum = vec4(0);
-    vec2 texcoord = uv.xy;
-    int j;
-    int i;
-
-    sum += texture(texture, vec2(texcoord.x - 4.0*blurSize, texcoord.y)) * 0.05;
-    sum += texture(texture, vec2(texcoord.x - 3.0*blurSize, texcoord.y)) * 0.09;
-    sum += texture(texture, vec2(texcoord.x - 2.0*blurSize, texcoord.y)) * 0.12;
-    sum += texture(texture, vec2(texcoord.x - blurSize, texcoord.y)) * 0.15;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y)) * 0.16;
-    sum += texture(texture, vec2(texcoord.x + blurSize, texcoord.y)) * 0.15;
-    sum += texture(texture, vec2(texcoord.x + 2.0*blurSize, texcoord.y)) * 0.12;
-    sum += texture(texture, vec2(texcoord.x + 3.0*blurSize, texcoord.y)) * 0.09;
-    sum += texture(texture, vec2(texcoord.x + 4.0*blurSize, texcoord.y)) * 0.05;
-        
-    sum += texture(texture, vec2(texcoord.x, texcoord.y - 4.0*blurSize)) * 0.05;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y - 3.0*blurSize)) * 0.09;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y - 2.0*blurSize)) * 0.12;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y - blurSize)) * 0.15;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y)) * 0.16;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y + blurSize)) * 0.15;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y + 2.0*blurSize)) * 0.12;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;
-    sum += texture(texture, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;
-
-    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*speed)) + texture(texture, texcoord);
+    vec2 glow_radius = blurSize / resolution.xy;
+    for(float d = 0.0; d < TAU; d += TAU/glow_directions)
+    {
+		for(float i = 1.0/glow_quality; i <= 1.0; i += 1.0/glow_quality)
+        {
+			sum += texture(texture, uv.xy + vec2(cos(d),sin(d)) * glow_radius * i);		
+        }
+    }
+    sum /= glow_quality * glow_directions - 15.0;
+    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * texture(texture, uv);
     
-    return result;
+    return  result;
 }
 float crtNoise(vec2 pos, float evolve) {
     
@@ -146,17 +138,8 @@ vec4 crtFrame(in vec2 staticCoords, in vec2 uv)
     float screenShadow = 1.0 - prod2(positiveLog(coords * screenShadowCoeff + vec2(1.0)) * positiveLog(-coords * screenShadowCoeff + vec2(screenShadowCoeff + 1.0)));
     alpha = max(0.8 * screenShadow, alpha);
 
-    /* Calculate normal vector to the center */
-    vec2 normal = staticCoords - vec2(0.4, 0.4);
-    normal = normal / length(normal);
-
-    /* Sample glow + blur for a decent reflection of the content on frame */
-    for(int i = 0; i < 20; i++)
-    {
-        color = mix(color, crtGlow(tex, staticCoords - (i/256.0)*normal, 1/256.0).rgb, 0.01);
-    }
-
-    return vec4(color*alpha, alpha);
+    vec4 final_color = vec4(color*alpha, alpha);
+    return final_color;
 }
 /* End of cool-retro-term code */
 
@@ -178,9 +161,9 @@ void main(void)
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
         /* Add glow effect */
-    	fragColor = vec4(mix(crtGlow(tex, uv, blurSizeDefault).rgb, vec3(0.0),apply),1.0);
+    	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, vec3(0.0),apply),1.0);
         /* Add glowy noise */
-        fragColor += 0.05 * vec4(back_color, 1.0) * length(crtGlow(noise_texture, uv, blurSizeDefault));
+        fragColor += 0.05 * vec4(back_color, 1.0) * length(crtGlow(noise_texture, uv, glow_size));
         /* Add scanline */
         fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;
         /* Mix with background image */
