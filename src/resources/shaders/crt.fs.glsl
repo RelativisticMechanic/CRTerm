@@ -45,7 +45,7 @@ vec2 margin = vec2(0.03, 0.03);
 
 
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
-vec4 crtGlow(in sampler2D texture, in vec2 uv, in float blurSize)
+vec4 crtGlow(in sampler2D crt_texture, in vec2 uv, in float blurSize)
 {
     /* Apply Gaussian Blur */
     vec4 sum = vec4(0);
@@ -54,11 +54,11 @@ vec4 crtGlow(in sampler2D texture, in vec2 uv, in float blurSize)
     {
 		for(float i = 1.0/glow_quality; i <= 1.0; i += 1.0/glow_quality)
         {
-			sum += texture(texture, uv.xy + vec2(cos(d),sin(d)) * glow_radius * i);		
+			sum += texture(crt_texture, uv.xy + vec2(cos(d),sin(d)) * glow_radius * i);		
         }
     }
     sum /= glow_quality * glow_directions - 15.0;
-    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * texture(texture, uv);
+    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * texture(crt_texture, uv);
     
     return  result;
 }
