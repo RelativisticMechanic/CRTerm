@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/ksqojxpjtqo3k4bk?svg=true)](https://ci.appveyor.com/project/RelativisticMechanic/crterm) [![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/RelativisticMechanic/CRTerm/releases/tag/0.3.8)
+[![Build status](https://ci.appveyor.com/api/projects/status/ksqojxpjtqo3k4bk?svg=true)](https://ci.appveyor.com/project/RelativisticMechanic/crterm) [![Download zip](https://custom-icon-badges.demolab.com/badge/-Download-blue?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/RelativisticMechanic/CRTerm/releases/tag/0.5.0)
 
 
 <img align="right" width="200" height="200" src="images/crterm-logo.png">
@@ -16,7 +16,7 @@ A CRT style terminal for Windows. Watch it in [action](https://www.youtube.com/w
 |![](images/wsl-amber.png)|![](images/cmd-green.png)| ![](images/winfetch.png) | ![](./images/256color.png) |
 
 
-| UTF-8 Support (WIP) | Vim                 | Matrix                  | Mapscii                 |
+| UTF-8 Support | Vim                 | Matrix                  | Mapscii                 |
 | ------------------   | ------------------- | ----------------------- | ----------------------- |
 | ![](images/utf8.png) | ![](images/vim.png) | ![](images/cmatrix.png) | ![](images/mapscii.png) |
 
@@ -32,7 +32,7 @@ The terminal supports a subset of VT220, and uses SDL-GPU for rendering. For the
 
 The terminal reads the "default" file in its directory which should just contain the path to a JSON file. An example is given in default and config/ located in src/resources. 
 
-The current version is 0.3.8, it is still in active development and may not replace your terminal application.
+The current version is 0.5.0, it is still in active development and may not replace your terminal application.
 
 ## Features
 
