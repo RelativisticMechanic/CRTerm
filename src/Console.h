@@ -163,7 +163,7 @@ private:
 
 	/* Last burn in time */
 	float last_burn_in_time = 0.0f;
-	float current_burn_in_time = 0.0f;
+
 	/* Boolean set to true by PREPARE_REDRAW, then set to false after Console::Redraw() is called. */
 	bool redraw_console = true;
 
