@@ -43,6 +43,7 @@ public:
 	float crt_warp;
 	CRTermColor color_scheme[16];
 
+	int resolution_x, resolution_y;
 	CRTermConfiguration()
 	{
 

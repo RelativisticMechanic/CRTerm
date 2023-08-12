@@ -14,6 +14,7 @@
 #include "CRTermConfig.h"
 #include "SDL_gpu.h"
 #include "ConsoleFont.h"
+#include "Timer.h"
 
 #define CONSOLE_MIN_LINES 500
 #define CONSOLE_MAX_LINES 10000
@@ -22,24 +23,27 @@
 /* 
 	Helper function to construct console attributes, 
 	which are basically VGA attributes that store
-	higher 4 bits as background color and lower 4 bits
+	higher 8 bits as background color and lower 8 bits
 	as foreground color.
 */
 
 /*
 	The attribute is a 32-bit structure that looks like this:
-	BITS 0-3: 4-bit forecolor
-	BITS 4-7: 4-bit backcolor
-	BITS 8-15: Reserved for future attributes like bold, italics, etc.
-	BITS 16-23: 8-bit forecolor
-	BITS 24-31: 8-bit backcolor
+	BITS 0-7: 8-bit forecolor
+	BITS 8-15: 8-bit backcolor
+	BITS 16-31: Unused
 
 	Usually, unless specified the 16-31 bits are zeroed for normal operation.
-	If they are non-zero, then they take precedence. 
 */
 
-#define CONSTRUCT_ATTRIBUTE(fcol,bcol) ((((bcol) << 4) | (fcol)))
-#define CONSTRUCT_ATTRIBUTE_256COL(f256, b256) ((((b256) << 8) | (f256)) << 16)
+#define CONSTRUCT_ATTRIBUTE(fcol,bcol) ((((bcol) << 8) | (fcol)))
+
+/* The PREPRARE_REDRAW keyword is called whenever we do something that will require the console text buffer to be redrawn. */
+#define PREPARE_REDRAW (redraw_console = true)
+
+/*
+	Class to abstract color stuff.
+*/
 class ConsoleColor
 {
 private:
@@ -75,10 +79,14 @@ public:
 	ConsoleAttrib* attrib_buffer;
 	/* Character-wise resolution of the console */
 	int console_w, console_h;
+	/* Font interface to be used by the console */
 	ConsoleFont* console_font;
+	/* Background image and noise texture for the shaders */
 	GPU_Image* crt_background;
 	GPU_Image* noise_texture;
+	/* Font width and height (in pixels) */
 	int font_w, font_h;
+	/* Cursor position (in terms of characters) */
 	int cursor_x, cursor_y;
 	/* Actual resolution of the console (in pixels) */
 	int console_resolution_x, console_resolution_y;
@@ -98,7 +106,9 @@ public:
 
 	/* Selecting text into the terminal */
 	bool is_selected;
+	/* Start of selection coordinates */
 	int selected_start_x = 0, selected_start_y = 0;
+	/* End of selection coordinates */
 	int selected_end_x = 0, selected_end_y = 0;
 
 	/* Wrap Around (DECAWM) */
@@ -124,29 +134,34 @@ public:
 	void HistoryDown();
 	void EnableWrapAround();
 	void DisableWrapAround();
+	void Redraw(void);
 	void SetSelection(bool selection, int start_x=0, int start_y=0, int end_x=0, int end_y=0);
 
 private:
-	ConsoleColor color_scheme[16];
-	ConsoleColor color_256[256];
+	/* Color palette, first 16 colors from JSON, rest 240 from XTerm256Palette.cpp */
+	ConsoleColor colors[256];
 
-	uint32_t crt_shader_id, text_shader_id;
-	GPU_ShaderBlock crt_shader_block, text_shader_block;
+	/*
+		Common Shader	- Default Shader (not really used but only there for debugging purposes)
+		Text Shader		- Applied when rendering into internal render_buffer, sets the text color.
+		CRT Shader		- Applied when rendering on the screen, takes the render_buffer, upscales and distorts it.
+	*/
+	uint32_t crt_shader_id, text_shader_id, common_shader_id;
+	GPU_ShaderBlock crt_shader_block, text_shader_block, common_shader_block;
 	/* 
 		Before being scaled and shaded, the pure text is rendered here,
 		it is shaded with the simple text shader that does the job of 
 		setting the appropriate colors.
 	*/
 	GPU_Image* render_buffer;
-	float crt_warp;
-	float prev_time;
-	float delta_time;
-	float cursor_shadow_width;
-	/* Varable to show the clock */
-	float cursor_clock;
-	/* This boolean is toggled every blink_rate milliseconds */
-	bool show_cursor;
 
+	/* Boolean set to true by PREPARE_REDRAW, then set to false after Console::Redraw() is called. */
+	bool redraw_console = true;
+
+	/* CRT warp factor passed to shader. */
+	float crt_warp;
+
+	/* Internal function used to keep cursor in limits. */
 	void LimitCursor();
 };
 

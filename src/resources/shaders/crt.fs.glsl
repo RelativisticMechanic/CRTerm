@@ -1,4 +1,4 @@
-#version 330
+#version 420
 
 #define PI  3.14159265358
 #define TAU 6.28318530718
@@ -6,9 +6,9 @@ in vec4 color;
 in vec2 texCoord;
 out vec4 fragColor;
 
-uniform sampler2D tex;
-uniform sampler2D crt_background;
-uniform sampler2D noise_texture;
+layout(binding = 0) uniform sampler2D tex;
+layout(binding = 1) uniform sampler2D crt_background;
+layout(binding = 2) uniform sampler2D noise_texture;
 
 uniform float time;
 uniform vec2 resolution;
@@ -60,7 +60,7 @@ vec4 crtGlow(in sampler2D crt_texture, in vec2 uv, in float blurSize)
     sum /= glow_quality * glow_directions - 15.0;
     vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * texture(crt_texture, uv);
     
-    return  result;
+    return result;
 }
 float crtNoise(vec2 pos, float evolve) {
     
@@ -143,15 +143,36 @@ vec4 crtFrame(in vec2 staticCoords, in vec2 uv)
 }
 /* End of cool-retro-term code */
 
+vec2 BrownConradyDistortion(in vec2 uv)
+{
+    // positive values of K1 give barrel distortion
+    float k1 = warp / 100.0;
+    float k2 = warp / 100.0;
+
+    uv = uv * 2.0 - 1.0; // brown conrady takes [-1:1]
+    
+    float r2 = uv.x * uv.x + uv.y * uv.y;
+    uv *= 1.0 + k1 * r2 + k2 * r2 * r2;
+    
+    uv = uv * 0.5 + 0.5; // [0:1]
+    
+    // using the distortion param as a scale factor, to keep the image close to the viewport dims
+    float scale = abs(k1) < 1.0 ? 1.0 - abs(k1) : 1.0 / (k1 + 1.0);		
+    
+    uv = uv * scale - (scale * 0.5) + 0.5; // scale from center
+    
+    return uv;
+}
+
 void main(void)
 {
     /* Turn texCoord into distorted CRT coordinates */
-    vec2 uv = texCoord;
+    vec2 uv = BrownConradyDistortion(texCoord);
     vec2 dc = abs(0.5-uv);
     dc *= dc;
     
-    uv.x -= 0.5; uv.x *= 1.0 + (dc.y * (0.3 * warp)); uv.x += 0.5;
-    uv.y -= 0.5; uv.y *= 1.0 + (dc.x * (0.3 * warp)); uv.y += 0.5;
+    //uv.x -= 0.5; uv.x *= 1.0 + (dc.y * (0.3 * warp)); uv.x += 0.5;
+    //uv.y -= 0.5; uv.y *= 1.0 + (dc.x * (0.3 * warp)); uv.y += 0.5;
 
     if ((uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0) && warp > 0.0)
     {

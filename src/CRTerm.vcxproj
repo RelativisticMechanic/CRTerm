@@ -226,6 +226,7 @@
     <ClInclude Include="LRUCache.h" />
     <ClInclude Include="PNGFont.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="TrueType.h" />
     <ClInclude Include="UITheme.h" />
     <ClInclude Include="ConfigEditor.h" />

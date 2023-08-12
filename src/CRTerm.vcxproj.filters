@@ -638,6 +638,9 @@
     <ClInclude Include="LRUCache.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CRTerm.rc">

@@ -8,6 +8,7 @@ CRTermUIInstance::CRTermUIInstance(GPU_Target* screen)
 	this->gl_context = screen->context->context;
 	ImGui::CreateContext();
 	ImGui_ImplSDL2_InitForOpenGL(this->sdl_window, screen->context->context);
+	SDL_GL_MakeCurrent(this->sdl_window, this->gl_context);
 	const char* glsl_version = "#version 330";
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	// Setup style
@@ -39,6 +40,10 @@ void CRTermUIInstance::Render(void)
 	ImGui_ImplSDL2_NewFrame(this->sdl_window);
 	ImGui::NewFrame();
 
+	/*ImGui::Begin("#FPS");
+	ImGui::Text(std::to_string(ImGui::GetIO().Framerate).c_str());
+	ImGui::End();*/
+
 	for (int i = 0; i < this->elements.size(); i++)
 	{
 		if (this->elements[i]->show)
@@ -47,6 +52,5 @@ void CRTermUIInstance::Render(void)
 		}
 	}
 	ImGui::Render();
-	SDL_GL_MakeCurrent(this->sdl_window, this->gl_context);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

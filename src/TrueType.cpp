@@ -110,7 +110,8 @@ void FreeTypeFont::GenerateGlyph(GlyphData* glyph, uint32_t codepoint)
 }
 GPU_Image* FreeTypeFont::GetGlyph(ConsoleChar c)
 {
-    if (c < 256)
+    /* c > 256 */
+    if (!(c & 0x100))
     {
         return this->glyphs[c].image;
     }
