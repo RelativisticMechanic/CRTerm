@@ -1,5 +1,6 @@
 #include "TrueType.h"
 #include <iostream>
+#include <cassert>
 
 void DestroyGlyph(GlyphData* glyph)
 {
@@ -108,12 +109,13 @@ void FreeTypeFont::GenerateGlyph(GlyphData* glyph, uint32_t codepoint)
     /* Convert to GPU_Image */
     glyph->image = GPU_CopyImageFromSurface(glyph->surface);
 }
+
+/* This function is executed every redraw, it is important. */
 GPU_Image* FreeTypeFont::GetGlyph(ConsoleChar c)
 {
-    /* c > 256 */
-    if (!(c & 0x100))
+    if (c < 256)
     {
-        return this->glyphs[c].image;
+        return glyphs[c].image;
     }
     else
     {
