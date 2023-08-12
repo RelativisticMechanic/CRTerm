@@ -33,6 +33,7 @@ public:
 	int font_width;
 	int font_height;
 	float font_scale;
+	float opacity;
 	bool fullscreen;
 	int console_width;
 	int console_height;

@@ -4,6 +4,7 @@
     "console_width": 90,
     "console_height": 30,
     "background": "background.png",
+    "opacity": 1.0,
     "text_shader": "shaders/text",
     "crt_shader": "shaders/crt",
     "crt_warp": 1.00,

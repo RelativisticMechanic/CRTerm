@@ -33,6 +33,10 @@ void ConfigEditor::Render(void)
     ImGui::SameLine();
     ImGui::InputFloat("##font_scale", &(cfg->font_scale));
 
+    ImGui::Text("Opacity");
+    ImGui::SameLine();
+    ImGui::InputFloat("##opacity", &(cfg->opacity));
+
     ImGui::Text("Full Screen");
     ImGui::SameLine();
     ImGui::Checkbox("##fullscren", &(cfg->fullscreen));

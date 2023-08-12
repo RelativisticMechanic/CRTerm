@@ -9,8 +9,11 @@ out vec4 fragColor;
 layout(binding = 0) uniform sampler2D tex;
 layout(binding = 1) uniform sampler2D crt_background;
 layout(binding = 2) uniform sampler2D noise_texture;
+layout(binding = 3) uniform sampler2D older_frame;
 
 uniform float time;
+uniform float current_frame_time;
+uniform float older_frame_time;
 uniform vec2 resolution;
 
 const float text_brightness_multiplier = 3.0;
@@ -43,6 +46,15 @@ float frameShadowCoeff = 15.0;
 float screenShadowCoeff = 15.0;
 vec2 margin = vec2(0.03, 0.03);
 
+/* Sample from the old frame and current framge and interpolate */
+vec4 burnInEffect(in vec2 uv, in sampler2D prev_frame, in sampler2D curr_frame)
+{
+    vec4 old_color = texture(prev_frame, uv);
+    vec4 new_color = texture(curr_frame, uv);
+    highp float decay = clamp((1.0/(current_frame_time - older_frame_time)) * 120.0, 0.0, 1.0);
+    old_color *= decay;
+    return max(old_color, new_color);
+}
 
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
 vec4 crtGlow(in sampler2D crt_texture, in vec2 uv, in float blurSize)
@@ -58,10 +70,11 @@ vec4 crtGlow(in sampler2D crt_texture, in vec2 uv, in float blurSize)
         }
     }
     sum /= glow_quality * glow_directions - 15.0;
-    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * texture(crt_texture, uv);
+    vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * burnInEffect(uv, older_frame, crt_texture);
     
     return result;
 }
+
 float crtNoise(vec2 pos, float evolve) {
     
     // Loop the evolution (over a very long period of time).
@@ -77,9 +90,7 @@ float crtNoise(vec2 pos, float evolve) {
 
 vec3 vigenette(in vec2 uv, in vec3 oricol)
 {
-
     float vig = (uv.x*uv.y - uv.x*uv.x*uv.y - uv.x*uv.y*uv.y + uv.x*uv.x*uv.y*uv.y) * vignette_brightness;
-    
     vig = pow(vig, vigenette_intensity);
     return vig * oricol;
 }
@@ -148,19 +159,13 @@ vec2 BrownConradyDistortion(in vec2 uv)
     // positive values of K1 give barrel distortion
     float k1 = warp / 100.0;
     float k2 = warp / 100.0;
-
     uv = uv * 2.0 - 1.0; // brown conrady takes [-1:1]
-    
     float r2 = uv.x * uv.x + uv.y * uv.y;
     uv *= 1.0 + k1 * r2 + k2 * r2 * r2;
-    
     uv = uv * 0.5 + 0.5; // [0:1]
-    
     // using the distortion param as a scale factor, to keep the image close to the viewport dims
     float scale = abs(k1) < 1.0 ? 1.0 - abs(k1) : 1.0 / (k1 + 1.0);		
-    
     uv = uv * scale - (scale * 0.5) + 0.5; // scale from center
-    
     return uv;
 }
 
@@ -170,9 +175,6 @@ void main(void)
     vec2 uv = BrownConradyDistortion(texCoord);
     vec2 dc = abs(0.5-uv);
     dc *= dc;
-    
-    //uv.x -= 0.5; uv.x *= 1.0 + (dc.y * (0.3 * warp)); uv.x += 0.5;
-    //uv.y -= 0.5; uv.y *= 1.0 + (dc.x * (0.3 * warp)); uv.y += 0.5;
 
     if ((uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0) && warp > 0.0)
     {
@@ -182,9 +184,8 @@ void main(void)
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
         /* Add glow effect */
+
     	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, vec3(0.0),apply),1.0);
-        /* Add glowy noise */
-        fragColor += 0.05 * vec4(back_color, 1.0) * length(crtGlow(noise_texture, uv, glow_size));
         /* Add scanline */
         fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;
         /* Mix with background image */

@@ -341,7 +341,9 @@
     <ClInclude Include="Shaders.h" />
     <ClInclude Include="VT100.h" />
     <ClInclude Include="Win32ClipBoard.h" />
+    <ClCompile Include="Win32Transparency.cpp" />
     <ClCompile Include="XTerm256Palette.cpp" />
+    <ClInclude Include="Win32Transparency.h" />
     <ClInclude Include="XTerm256Palette.h" />
   </ItemGroup>
   <ItemGroup>

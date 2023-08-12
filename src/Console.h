@@ -82,7 +82,7 @@ public:
 	/* Font interface to be used by the console */
 	ConsoleFont* console_font;
 	/* Background image and noise texture for the shaders */
-	GPU_Image* crt_background;
+	GPU_Image* crt_background = NULL;
 	GPU_Image* noise_texture;
 	/* Font width and height (in pixels) */
 	int font_w, font_h;
@@ -155,6 +155,15 @@ private:
 	*/
 	GPU_Image* render_buffer;
 
+	/* Older frame used for the burn in effect */
+	GPU_Image* older_frame;
+
+	/* Timer that allows this operation */
+	Timer old_frame_timer;
+
+	/* Last burn in time */
+	float last_burn_in_time = 0.0f;
+	float current_burn_in_time = 0.0f;
 	/* Boolean set to true by PREPARE_REDRAW, then set to false after Console::Redraw() is called. */
 	bool redraw_console = true;
 

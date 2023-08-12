@@ -58,6 +58,7 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		this->crt_warp = configuration_data.at("crt_warp");
 		this->maxlines = configuration_data.at("maxlines");
 		this->fullscreen = configuration_data.at("fullscreen");
+		this->opacity = configuration_data.at("opacity");
 
 		int i = 0;
 		for (auto& color : configuration_data.at("color_scheme"))
@@ -83,16 +84,19 @@ CRTermConfiguration::CRTermConfiguration(std::string json_path)
 		std::string err = error.what();
 		std::wstring errW = std::wstring(err.begin(), err.end());
 		MessageBox(GetActiveWindow(), (LPCWSTR)errW.c_str(), L"Error loading default.json", MB_OK | MB_ICONERROR);
+		exit(-1);
 	}
 	catch (nlohmann::json::type_error& error)
 	{
 		std::string err = error.what();
 		std::wstring errW = std::wstring(err.begin(), err.end());
 		MessageBox(GetActiveWindow(), (LPCWSTR)errW.c_str(), L"Error loading default.json", MB_OK | MB_ICONERROR);
+		exit(-1);
 	}
 	catch (...)
 	{
 		MessageBox(GetActiveWindow(), L"An unknown error occurred. An attribute must be missing.", L"Error loading default.json", MB_OK | MB_ICONERROR);
+		exit(-1);
 	}
 }
 
@@ -118,6 +122,7 @@ void CRTermConfiguration::Save(std::string filename)
 	output_json["crt_warp"] = this->crt_warp;
 	output_json["maxlines"] = this->maxlines;
 	output_json["fullscreen"] = this->fullscreen;
+	output_json["opacity"] = this->opacity;
 
 	int color_scheme_arr[16][3];
 

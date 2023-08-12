@@ -12,7 +12,6 @@
 #define SDL_MAIN_HANDLED
 #include "SDL_gpu.h"
 #include "CustomTitleBar.h"
-#include "Shaders.h"
 #include "Console.h"
 #include "VT100.h"
 #include "CRTermUI.h"
@@ -25,6 +24,7 @@
 #include "ConsoleFont.h"
 #include "PNGFont.h"
 #include "TrueType.h"
+#include "Win32Transparency.h"
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
@@ -109,6 +109,11 @@ int main(int argc, char* argv[])
 
 	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
 
+	/*
+		Make window transparent. 
+	*/
+	Win32SetWindowTransparency(cfg->opacity);
+
 	SDL_Event ev;
 	bool done = false;
 	
@@ -190,6 +195,7 @@ int main(int argc, char* argv[])
 			}
 		} 
 		GPU_ClearColor(screen, SDL_Color{ 52, 55, 64, 255 });
+		//GPU_ClearColor(screen, SDL_Color{ 0, 0, 0, 255 });
 		/* First render the terminal */
 		vt100_term->VT100Render();
 		/* Then the UI */

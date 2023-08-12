@@ -105,6 +105,9 @@
     <ClCompile Include="XTerm256Palette.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Win32Transparency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders.h">
@@ -639,6 +642,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Transparency.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

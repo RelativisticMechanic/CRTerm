@@ -37,14 +37,22 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 
 	/* Load the font and the background image */
 	this->console_font = fnt;
-	this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
+
+	if (cfg->crt_background_image != "")
+	{
+		this->crt_background = GPU_LoadImage(cfg->crt_background_image.c_str());
+	}
+
 	this->noise_texture = GPU_LoadImage("ui/noise.png");
 
 	/* Separate render buffer for rendering the console before scaling it. */
 	this->render_buffer = GPU_CreateImage(this->console_resolution_x, this->console_resolution_y, GPU_FORMAT_RGBA);
+	this->older_frame = GPU_CreateImage(this->console_resolution_x, this->console_resolution_y, GPU_FORMAT_RGBA);
 	GPU_LoadTarget(this->render_buffer);
-
+	GPU_LoadTarget(this->older_frame);
+	
 	/* Load shaders */
+	this->common_shader_block = loadShaderProgram(&this->common_shader_id, "shaders/common");
 	this->crt_shader_block = loadShaderProgram(&this->crt_shader_id, cfg->shader_path_crt);
 	this->text_shader_block = loadShaderProgram(&this->text_shader_id, cfg->shader_path_text);
 
@@ -68,18 +76,24 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	/* Clear the console */
 	this->Clear();
 
+	this->old_frame_timer = Timer(300);
 	/* Set shader parameters */
 	/* We set the permanent parameters here instead of every frame. */
 	float resolution[2] = { (float)cfg->resolution_x, (float)cfg->resolution_y };
 	GPU_ActivateShaderProgram(this->crt_shader_id, &(this->crt_shader_block));
+	
 	/* Set warp and resolution */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
 	/* Pass the back color to give the glow accent */
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "back_color"), 3, 1, this->colors[this->default_back_color].returnArray());
 	/* Pass the CRT background image to blend with */
-	GPU_SetShaderImage(this->crt_background, GPU_GetUniformLocation(this->crt_shader_id, "crt_background"), 1);
+	if (this->crt_background)
+	{
+		GPU_SetShaderImage(this->crt_background, GPU_GetUniformLocation(this->crt_shader_id, "crt_background"), 1);
+	}
 	GPU_SetShaderImage(this->noise_texture, GPU_GetUniformLocation(this->crt_shader_id, "noise_texture"), 2);
+	
 	GPU_DeactivateShaderProgram();
 }
 
@@ -353,6 +367,7 @@ void Console::Redraw(void)
 	GPU_Clear(this->render_buffer->target);
 	/* Enable text shader */
 	GPU_ActivateShaderProgram(this->text_shader_id, &this->text_shader_block);
+
 	/* Set text alpha to 1.0 */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 1.0);
 	for (int y = 0; y < this->console_h; y++)
@@ -426,6 +441,15 @@ void Console::Redraw(void)
 /* The Console Render function, this is what makes the magic happen :) */
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
+
+	if (old_frame_timer.Elapsed())
+	{
+		GPU_ActivateShaderProgram(this->common_shader_id, &this->common_shader_block);
+		GPU_Clear(this->older_frame->target);
+		GPU_Blit(this->render_buffer, NULL, this->older_frame->target, this->older_frame->w / 2, this->older_frame->h / 2);
+		this->last_burn_in_time = SDL_GetTicks64();
+	}
+
 	/* If pending redraw, draw it. */
 	if (this->redraw_console)
 	{
@@ -439,8 +463,14 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
 	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
+
 	/* Set time */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "time"), ((float)SDL_GetTicks64()) / 1000.0);
+	/* Set Burn In Effect Parameters */
+	GPU_SetShaderImage(this->older_frame, GPU_GetUniformLocation(this->crt_shader_id, "older_frame"), 3);
+	/* These are sent in ms for accuracy */
+	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "current_frame_time"), SDL_GetTicks64());
+	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "older_frame_time"), this->last_burn_in_time);
 	/* Now blit to screen! */
 	GPU_BlitScale(this->render_buffer, NULL, t, xloc + (int)(this->render_buffer->w / 2) * scale, yloc + (int)(this->render_buffer->h / 2) * scale, scale, scale);
 	GPU_DeactivateShaderProgram();
