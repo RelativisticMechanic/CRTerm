@@ -44,12 +44,12 @@ The `ConsoleAttrib` may be interesting, it looks like this:
 
 | Bits  | Function            |
 | ----  | ------              |
-| 0-3   | Fore Color (4-bit)  |
-| 4-7   | Back Color (4-bit)  |
-| 8-15  | Reserved (for now)  |
-| 16-23 | Fore Color (8-bit)  |
-| 24-31 | Back Color (8-bit)  |
- 
+| 0-8   | Fore Color (8-bit)  |
+| 8-15  | Back Color (8-bit)  |
+| 15-31 | Reserved (for now)  |
+
+Of course, the "reserved" bit-fields may later be used for denoting things like bold, italics, or underline when full TrueType support is implemented.
+
 The Console class (`src/Console.cpp`) has a variable called `start_line` and `last_line`, `start_line` refers to the starting line to be rendered, while `last_line` is the *last* possible value of *start_line*, essentially: `start_line <= last_line` always, if not, then something has gone horribly wrong!
 
 Anyways, this allows us to have scrollback history. Console::HistoryUp() decrements `start_line`, Console::HistoryDown() increments it. The VT100 class in its `VT100HandleEvent()` calls these functions when it detects and SDL_MOUSEWHEELUP and SDL_MOUSEWHEELDOWN events, respectively.
@@ -253,3 +253,22 @@ I use ocornut's Dear ImGui to implement the basic UI the program has (mostly a c
 
 On top of ImGui, I've created a class called UIElement (see `src/CRTermUI.h`) that makes it easier to manage UI elements to be rendered.
 
+## Implementing the Special Effects
+
+Here's a brief overview of the rendering pipeline:
+
+1. The Console class (`src/Console.cpp`) has two buffers, one is called "render_buffer" and the other is called "older_frame" both of which stored the rendered text (w/ color). The "older_frame" lags behind the render_buffer by a time that is the interval in `burn_in_timer.interval_ms` (I right now have it at 300 ms). Essentially, every 300 ms, the program blits the data in render_buffer to older_frame.
+2. When the Console::Render() method is called, we check if there is pending redraw to the Console (the boolean `Console::redraw_console` is set to true by various functions that modify the Console output using the macro PREPARE_REDRAW), if there is, we do the following:
+	- Activate the text shader (shaders/text.fs.glsl)
+ 	- Render the text: the text shader is executed on every 16x16 character/glyph sent to the rendering pipeline and it simply sets the appropriate alpha and colour.
+  	- Render the cursor, selection, scrollbar.
+All of this rendering is to the render_buffer.
+3. Now that the text is redrawn we scale up the render_buffer as per the "font_scale" in the configuration JSON and blit to the screen, we begin the specical effects in the CRT shader (shaders/crt.fs.glsl)
+	- First we distort the coordinates using Brown-Conrady distortion to give that "CRT warped screen" look.
+ 	- Interpolate between older_frame and current_frame to give that "fade out" effect.
+  	- Next we add the phosphor glow, the glow is simply a Gaussian blur with the appropriate color.	 
+  	- We then mix the color of the background specified in the user's JSON. 	
+ 	- Next we add noise.
+  	- Next we add the glowing line.
+   	- Finally, we add the vigenette.
+  
