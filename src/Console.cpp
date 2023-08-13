@@ -460,7 +460,7 @@ void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 		We have now rendered the terminal to the local render buffer,
 		now we pass it through the CRT shader and scale it up.
 		Now apply the CRT effect shader
-		The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, and noise.
+		The CRT effect shader applies CRT warp effect, CRT phosphor glow scanline effect, burn in and noise.
 	*/
 	GPU_ActivateShaderProgram(this->crt_shader_id, &this->crt_shader_block);
 
