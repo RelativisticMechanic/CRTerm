@@ -76,12 +76,12 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	/* Clear the console */
 	this->Clear();
 
-	this->old_frame_timer = Timer(300);
+	this->old_frame_timer = Timer(800);
+
 	/* Set shader parameters */
 	/* We set the permanent parameters here instead of every frame. */
 	float resolution[2] = { (float)cfg->resolution_x, (float)cfg->resolution_y };
 	GPU_ActivateShaderProgram(this->crt_shader_id, &(this->crt_shader_block));
-	
 	/* Set warp and resolution */
 	GPU_SetUniformf(GPU_GetUniformLocation(this->crt_shader_id, "warp"), this->crt_warp);
 	GPU_SetUniformfv(GPU_GetUniformLocation(this->crt_shader_id, "resolution"), 2, 1, (float*)&resolution);
@@ -419,7 +419,7 @@ void Console::Redraw(void)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->colors[this->default_fore_color].returnArray());
 		/* Set selected text alpha to 0.4 */
-		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.2);
+		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.4);
 		for (int i = this->selected_start_x + this->selected_start_y * this->console_w; i < this->selected_end_x + this->selected_end_y * this->console_w; i++)
 		{
 
@@ -441,18 +441,16 @@ void Console::Redraw(void)
 /* The Console Render function, this is what makes the magic happen :) */
 void Console::Render(GPU_Target* t, int xloc, int yloc, float scale)
 {
-
-	if (old_frame_timer.Elapsed())
-	{
-		GPU_ActivateShaderProgram(this->common_shader_id, &this->common_shader_block);
-		GPU_Clear(this->older_frame->target);
-		GPU_Blit(this->render_buffer, NULL, this->older_frame->target, this->older_frame->w / 2, this->older_frame->h / 2);
-		this->last_burn_in_time = SDL_GetTicks64();
-	}
-
 	/* If pending redraw, draw it. */
 	if (this->redraw_console)
 	{
+		GPU_ActivateShaderProgram(this->common_shader_id, &this->common_shader_block);
+		if (old_frame_timer.Elapsed())
+		{
+			GPU_Clear(this->older_frame->target);
+			this->last_burn_in_time = SDL_GetTicks64();
+		}
+		GPU_Blit(this->render_buffer, NULL, this->older_frame->target, this->older_frame->w / 2, this->older_frame->h / 2);
 		this->Redraw();
 		this->redraw_console = false;
 	}

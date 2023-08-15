@@ -34,6 +34,9 @@
     <Filter Include="Header Files\freetype">
       <UniqueIdentifier>{eacc3354-f13a-415c-9665-04cfccff1ca7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sdl2_mixer">
+      <UniqueIdentifier>{14e7064f-6437-4bfc-b14f-0e62eb5d1c82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRTerm.cpp">
@@ -106,6 +109,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Win32Transparency.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowTitle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -645,6 +651,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Win32Transparency.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\SDL2_mixer\include\SDL_mixer.h">
+      <Filter>Header Files\sdl2_mixer</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowTitle.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

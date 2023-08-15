@@ -23,7 +23,7 @@ public:
 	bool Elapsed(void)
 	{
 		uint64_t current = SDL_GetTicks64();
-		if (current - previous >= this->interval_ms)
+		if ((current - previous >= this->interval_ms))
 		{
 			previous = current;
 			return true; 
@@ -42,6 +42,7 @@ public:
 		}
 		return (float)(SDL_GetTicks64() - previous) / (float)interval_ms;
 	}
+
 	void Reset(void)
 	{
 		this->previous = SDL_GetTicks64();

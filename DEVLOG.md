@@ -174,6 +174,8 @@ And of course, the value in "utf8_char" is stored in the Console::buffer, which 
 
 Another headache with Windows systems is that Windows internally implements wchar_t as UTF-16, so that means while copying and pasting we must use MultiByteToWideChar() and WideCharToMultiByte() functions from Windows API. 
 
+Another thing was implementing a fallback font, in case the user given font does not have the required glyph, for this I used GNU Unifont.
+
 ## Sending Keycodes to the Program
 
 Just as VT100 implements a standard for output, it also implements a standard for input. I use a hash map to map various SDL keys to VT100 strings to be sent through the pipe "toProgram", located in `src/VT100.h`.
@@ -257,7 +259,7 @@ On top of ImGui, I've created a class called UIElement (see `src/CRTermUI.h`) th
 
 Here's a brief overview of the rendering pipeline:
 
-1. The Console class (`src/Console.cpp`) has two buffers, one is called "render_buffer" and the other is called "older_frame" both of which stored the rendered text (w/ color). The "older_frame" lags behind the render_buffer by a time that is the interval in `burn_in_timer.interval_ms` (I right now have it at 300 ms). Essentially, every 300 ms, the program blits the data in render_buffer to older_frame.
+1. The Console class (`src/Console.cpp`) has two buffers, one is called "render_buffer" and the other is called "older_frame" both of which stored the rendered text (w/ color). The "older_frame" lags behind the render_buffer by a time that is the interval in `burn_in_timer.interval_ms` (I right now have it at 300 ms). Essentially, every frame, the program blits the data in render_buffer to older_frame and every 300 ms the older frame is cleared, giving a feeling of lag.
 2. When the Console::Render() method is called, we check if there is pending redraw to the Console (the boolean `Console::redraw_console` is set to true by various functions that modify the Console output using the macro PREPARE_REDRAW), if there is, we do the following:
 	- Activate the text shader (shaders/text.fs.glsl)
  	- Render the text: the text shader is executed on every 16x16 character/glyph sent to the rendering pipeline and it simply sets the appropriate alpha and colour.

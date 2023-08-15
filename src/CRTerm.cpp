@@ -11,6 +11,8 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL_gpu.h"
+#include "SDL_mixer.h"
+
 #include "CustomTitleBar.h"
 #include "Console.h"
 #include "VT100.h"
@@ -25,6 +27,8 @@
 #include "PNGFont.h"
 #include "TrueType.h"
 #include "Win32Transparency.h"
+#include "WindowTitle.h"
+
 
 /* SDLmain requires this. It seems to define its own main. */
 #undef main
@@ -56,10 +60,9 @@ int main(int argc, char* argv[])
 
 	/* Default to 640x480, we'll calculate the required terminal resolution later. */
 	GPU_Target* screen = GPU_Init(640, 480, GPU_DEFAULT_INIT_FLAGS);
-	if (screen == NULL)
-	{
-		return 1;
-	}
+	SDL_Window* window = SDL_GetWindowFromID(screen->context->windowID);
+
+	assert(screen != NULL && window != NULL);
 
 	/* Load up the font */
 	ConsoleFont* fnt;
@@ -107,12 +110,17 @@ int main(int argc, char* argv[])
 	if(cfg->fullscreen)
 		GPU_SetFullscreen(true, true);
 
-	SDL_SetWindowTitle(SDL_GetWindowFromID(screen->context->windowID), "CRTerm.exe starting...");
+	CRTermSetWindowTitle(window, "CRTerm.exe starting...");
 
 	/*
 		Make window transparent. 
 	*/
 	Win32SetWindowTransparency(cfg->opacity);
+
+	/* Set up audio, 22000 Hz, 2-channel */
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+	/* Enable drop file */
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
 	SDL_Event ev;
 	bool done = false;
@@ -165,6 +173,9 @@ int main(int argc, char* argv[])
 	int mouse_x = 0, mouse_y = 0;
 	SDL_GetMouseState(&mouse_x, &mouse_y);
 
+	Mix_Music* music = NULL;
+	const char* SDL_DROPFILE_file_resource = NULL;
+
 	while (!done)
 	{
 		while (SDL_PollEvent(&ev))
@@ -176,6 +187,37 @@ int main(int argc, char* argv[])
 				break;
 			case SDL_MOUSEMOTION:
 				SDL_GetMouseState(&mouse_x, &mouse_y);
+				break;
+			/* Did the user drop a file */
+			case SDL_DROPFILE:
+			{
+				std::string filename = std::string(ev.drop.file);
+				SDL_free(ev.drop.file);
+				/* Play music if MP3 */
+				if (endsWith(filename, ".mp3"))
+				{
+					CRTermSetWindowTitlePrefix(window, CRTERM_DEFAULT_MUSIC_TITLE_PREFIX);
+					if (music)
+					{
+						Mix_FreeMusic(music);
+						music = NULL;
+					}
+					music = Mix_LoadMUS(filename.c_str());
+					Mix_PlayMusic(music, -1);
+				}
+				/* Also send the file to the terminal stream */
+				vt100_term->VT100Send(filename);
+			}
+				break; 
+			case SDL_KEYDOWN:
+				/* Stop playing Music on SDLK_end */
+				if (ev.key.keysym.sym == SDLK_END)
+				{
+					CRTermSetWindowTitlePrefix(window, CRTERM_DEFAULT_TITLE_PREFIX);
+					Mix_HaltMusic();
+					Mix_FreeMusic(music);
+					music = NULL;
+				}
 				break;
 			default:
 				break;
@@ -202,6 +244,7 @@ int main(int argc, char* argv[])
 		UI->Render();
 		GPU_Flip(screen);
 	}
+	Mix_CloseAudio();
 	SDL_Quit();
 	return 0;
 }

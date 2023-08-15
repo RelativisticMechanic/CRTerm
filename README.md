@@ -43,12 +43,18 @@ The current version is 0.5.0, it is still in active development and may not repl
 * TrueType support
 * 256 Color (in upcoming release)
 * UTF-8 Support (Work in progress)
+* Drag and drop files (plays MP3 in the terminal itself!)
 
 Hey, it looks nice, if you wanted functionality, go for Windows Terminal.
 
 ## Upcoming
 
+For the road to 1.0.0, we have the following,
+
 * Support for certain iTerm sequences to allow graphics rendering in the terminal
+* Support for terminal resizing
+* Support for coloured glyphs
+* Full TrueType (including bold and italics)
 
 ## Building
 
@@ -58,6 +64,7 @@ All dependencies are present in the repo, they are:
 
 - ImGui
 - SDL2
+- SDL_mixer
 - SDL2-GPU
 - FreeType
 

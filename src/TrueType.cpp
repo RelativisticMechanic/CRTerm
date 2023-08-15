@@ -29,15 +29,27 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
         std::cerr << "Unable to load TrueType font: " << filename << std::endl;
         exit(-1);
     }
+    /* Load up the unifont */
+    err = FT_New_Face(ft_lib, "unifont.ttf", 0, &ft_fallback);
+
+    if (err)
+    {
+        std::cerr << "Unable to load fallback font! (unifont.ttf)" << std::endl;
+        exit(-1);
+    }
+
     this->mono_height = size;
     this->mono_width = size;
 
     /* Set pixel size */
     err = FT_Set_Pixel_Sizes(ft_face, mono_width, mono_height);
+    err = FT_Set_Pixel_Sizes(ft_fallback, mono_width, mono_height);
+
     /* Set unicode encoding */
     FT_Select_Charmap(ft_face, ft_encoding_unicode);
+    FT_Select_Charmap(ft_fallback, ft_encoding_unicode);
 
-    /* Load up the first 65,536 glyphs */
+    /* Load up the first 256 glyphs */
     for (int i = 0; i < 256; i++)
     {
         this->GenerateGlyph(&(this->glyphs[i]), i);
@@ -60,10 +72,17 @@ void FreeTypeFont::GenerateGlyph(GlyphData* glyph, uint32_t codepoint)
 {
     /* Load up the glyph */
     FT_UInt glyph_index = FT_Get_Char_Index(ft_face, codepoint);
-    FT_Error err = FT_Load_Glyph(ft_face, glyph_index, FT_LOAD_DEFAULT);
-    FT_Render_Glyph(ft_face->glyph, FT_RENDER_MODE_NORMAL);
+    FT_Face face_to_use = ft_face;
+    if (!glyph_index)
+    {
+        /* Failed, resort to fallback font (GNU Unifont) */
+        glyph_index = FT_Get_Char_Index(ft_fallback, codepoint);
+        face_to_use = ft_fallback;
+    }
 
-    uint8_t* src = ft_face->glyph->bitmap.buffer;
+    FT_Load_Glyph(face_to_use, glyph_index, FT_LOAD_DEFAULT);
+    FT_Render_Glyph(face_to_use->glyph, FT_RENDER_MODE_NORMAL);
+    uint8_t* src = face_to_use->glyph->bitmap.buffer;
 
     /* Allocate a fixed size buffer, as TrueType fonts are not fixed size but we are. */
     uint8_t* letter_buf = (uint8_t*)calloc(mono_height * mono_width, sizeof(uint8_t));
@@ -71,12 +90,12 @@ void FreeTypeFont::GenerateGlyph(GlyphData* glyph, uint32_t codepoint)
 
     /* Place the newly rendered glyph into our fixed size bitmap buffer */
 
-    int height = ft_face->glyph->bitmap.rows;
-    int width = ft_face->glyph->bitmap.width;
+    int height = face_to_use->glyph->bitmap.rows;
+    int width = face_to_use->glyph->bitmap.width;
     /* Center the bitmap horizontally into our fixed size buffer */
     int offsetx = (mono_width - width) / 2;
     /* TODO: Why does this formula work? */
-    int offsety = (mono_height - ft_face->glyph->bitmap_top - (mono_height / 4));
+    int offsety = (mono_height - face_to_use->glyph->bitmap_top - (mono_height / 4));
 
     /* Copy data from source buffer into our fixed size buffer */
     for (int i = 0; i < height; i++)

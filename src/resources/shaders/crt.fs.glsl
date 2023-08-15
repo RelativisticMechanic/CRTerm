@@ -184,7 +184,6 @@ void main(void)
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
         /* Add glow effect */
-
     	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, vec3(0.0),apply),1.0);
         /* Add scanline */
         fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;

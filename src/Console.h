@@ -11,8 +11,9 @@
 
 #include <cstdint>
 #include <string>
-#include "CRTermConfig.h"
 #include "SDL_gpu.h"
+
+#include "CRTermConfig.h"
 #include "ConsoleFont.h"
 #include "Timer.h"
 

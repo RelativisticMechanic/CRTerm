@@ -45,6 +45,7 @@ private:
 	LRUCache<ConsoleChar, GlyphData*>* unicode_cache;
 	FT_Library ft_lib;
 	FT_Face ft_face;
+	FT_Face ft_fallback;
 	GlyphData glyphs[256];
 	int mono_width;
 	int mono_height;

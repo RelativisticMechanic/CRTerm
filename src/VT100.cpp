@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <Windows.h>
 #include "CRTerm.h"
+#include "WindowTitle.h"
 #include "VT100.h"
 #include "ConPTY.h"
 #include "Win32ClipBoard.h"
@@ -142,8 +143,7 @@ void VT100::VT100Take(unsigned char c)
 				parser_state = VTSTATE_NORMAL;
 
 			/* Set the window title to 0 string */
-			std::string window_title = "Gautam's CRTerm - " + title;
-			SDL_SetWindowTitle(this->sdl_window, window_title.c_str());
+			CRTermSetWindowTitle(this->sdl_window, title);
 		}
 		else
 		{
