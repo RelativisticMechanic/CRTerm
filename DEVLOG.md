@@ -131,7 +131,7 @@ void VT100::VT100Putc(unsigned char c)
 		case 0b1111:
 			/* UTF-8 3 bytes left */
 			utf8_bytes_left = 3;
-			utf8_char = (c << 0b0000011) << 18;
+			utf8_char = (c & 0b0000111) << 18;
 			break;
 		default:
 			/* Not UTF-8, print as is */

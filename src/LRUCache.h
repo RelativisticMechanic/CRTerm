@@ -2,6 +2,7 @@
 	This is an LRU cache, for now its only use is caching Unicode glyphs
 	by the TrueType renderer.
 */
+
 #ifndef CRTERM_LRU_CACHE_H
 #define CRTERM_LRU_CACHE_H
 

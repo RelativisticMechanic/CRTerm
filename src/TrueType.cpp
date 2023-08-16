@@ -31,7 +31,7 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
     }
     /* Load up the unifont */
     err = FT_New_Face(ft_lib, "unifont.ttf", 0, &ft_fallback);
-
+    err = FT_New_Face(ft_lib, "unifont-upper.ttf", 0, &ft_fallback_upper);
     if (err)
     {
         std::cerr << "Unable to load fallback font! (unifont.ttf)" << std::endl;
@@ -44,10 +44,12 @@ FreeTypeFont::FreeTypeFont(std::string filename, int size)
     /* Set pixel size */
     err = FT_Set_Pixel_Sizes(ft_face, mono_width, mono_height);
     err = FT_Set_Pixel_Sizes(ft_fallback, mono_width, mono_height);
+    err = FT_Set_Pixel_Sizes(ft_fallback_upper, mono_width, mono_height);
 
     /* Set unicode encoding */
     FT_Select_Charmap(ft_face, ft_encoding_unicode);
     FT_Select_Charmap(ft_fallback, ft_encoding_unicode);
+    FT_Select_Charmap(ft_fallback_upper, ft_encoding_unicode);
 
     /* Load up the first 256 glyphs */
     for (int i = 0; i < 256; i++)
@@ -78,6 +80,17 @@ void FreeTypeFont::GenerateGlyph(GlyphData* glyph, uint32_t codepoint)
         /* Failed, resort to fallback font (GNU Unifont) */
         glyph_index = FT_Get_Char_Index(ft_fallback, codepoint);
         face_to_use = ft_fallback;
+    }
+    if (!glyph_index)
+    {
+        /* Failed, resort to upper glyph */
+        glyph_index = FT_Get_Char_Index(ft_fallback_upper, codepoint);
+        face_to_use = ft_fallback_upper;
+    }
+
+    if (!glyph_index)
+    {
+        std::cout << "UNKNOWN CHAR (UTF-32): " << codepoint << std::endl;
     }
 
     FT_Load_Glyph(face_to_use, glyph_index, FT_LOAD_DEFAULT);
