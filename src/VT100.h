@@ -18,6 +18,7 @@
 #include "Console.h"
 #include "ConsoleFont.h"
 #include "CRTermConfig.h"
+#include "VT100Mouse.h"
 
 #define VT100_ARG_STACK_SIZE 8
 
@@ -63,6 +64,10 @@ public:
 	bool keyboard_disabled = false;
 	/* For reporting focus change */
 	bool report_focus_change = false;
+	/* For reporting mouse movements */
+	bool report_mouse_movement = false;
+
+	VT100_MOUSEBTN_REPORTING_STYLE mouse_reporting_style = VT100_MOUSEBTN_REPORTING_STYLE_DEFAULT;
 
 	bool is_selected, is_dragging;
 	int selected_start_x = 0;
@@ -202,12 +207,9 @@ public:
 	/* In case the user tries a funky way of selection */
 	inline void orientSelectedCoords(void)
 	{
-		if (this->selected_start_x > this->selected_end_x)
+		if (this->selected_start_x > this->selected_end_x && this->selected_start_y > this->selected_end_y)
 		{
 			std::swap(this->selected_start_x, this->selected_end_x);
-		}
-		if (this->selected_start_y > this->selected_end_y)
-		{
 			std::swap(this->selected_start_y, this->selected_end_y);
 		}
 	}

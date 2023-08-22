@@ -27,7 +27,7 @@ CustomTitleBar::CustomTitleBar(GPU_Target* screen) : UIElement()
     this->resolution_y = screen->h;
     this->show = true;
 
-    this->icon = GPU_LoadImage("ui/logo.png");
+    this->icon = GPU_LoadImage("ui/icon.png");
     GPU_SetImageFilter(this->icon, GPU_FILTER_NEAREST);
 }
 void CustomTitleBar::Render()

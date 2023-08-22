@@ -15,7 +15,7 @@
 #include <string>
 
 #define TRUETYPE_DEFAULT_FONT_SIZE 16
-#define TRUETYPE_DEFAULT_CACHE_SIZE 256
+#define TRUETYPE_DEFAULT_CACHE_SIZE 512
 
 #include "ft2build.h"
 #include FT_FREETYPE_H

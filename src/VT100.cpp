@@ -517,6 +517,16 @@ void VT100::VT100Take(unsigned char c)
 			{
 				this->report_focus_change = true;
 			}
+			/* CSI ? 1003 h - DEC Turn ON mouse tracking with movement */
+			else if (this->argument_stack[0].value == 1003)
+			{
+				this->report_mouse_movement = true; 
+			}
+			/* CSI ? 1005/1015 l - XTERM/URXVT Turn ON multibyte reporting style */
+			else if (this->argument_stack[0].value == 1015 || this->argument_stack[0].value == 1005)
+			{
+				this->mouse_reporting_style = VT100_MOUSEBTN_REPORTING_STYLE_URXVT;
+			}
 			else
 			{
 				std::cout << "Unimplemented ON: " << this->argument_stack[0].value << std::endl;
@@ -548,10 +558,20 @@ void VT100::VT100Take(unsigned char c)
 			{
 				// IGNORE.
 			}
-			/* CSI ? 1004 h - DEC Turn OFF reporting focus change */
+			/* CSI ? 1003 l - DEC Turn OFF mouse tracking with movement */
+			else if (this->argument_stack[0].value == 1003)
+			{
+				this->report_mouse_movement = false;
+			}
+			/* CSI ? 1004 l - DEC Turn OFF reporting focus change */
 			else if (this->argument_stack[0].value == 1004)
 			{
 				this->report_focus_change = false;
+			}
+			/* CSI ? 1005/1015 l - XTERM/URXVT Turn OFF multibyte reporting style */
+			else if (this->argument_stack[0].value == 1015 || this->argument_stack[0].value == 1005)
+			{
+				this->mouse_reporting_style = VT100_MOUSEBTN_REPORTING_STYLE_DEFAULT;
 			}
 			else
 			{
@@ -702,7 +722,7 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 		}
 		break;
 	case SDL_MOUSEBUTTONDOWN:
-		if (ev.button.button == SDL_BUTTON_LEFT)
+		if (ev.button.button == SDL_BUTTON_LEFT && !this->report_mouse_movement)
 		{
 			getConsoleMouseCoords(&(this->selected_start_x), &(this->selected_start_y));
 			getConsoleMouseCoords(&(this->selected_end_x), &(this->selected_end_y));
@@ -718,11 +738,19 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 	case SDL_MOUSEWHEEL:
 		if (ev.wheel.y > 0)
 		{
-			this->con->HistoryUp();
+			int lines_to_up = abs(ev.wheel.y);
+			for (int i = 0; i < lines_to_up; i++)
+			{
+				this->con->HistoryUp();
+			}
 		}
 		else
 		{
-			this->con->HistoryDown();
+			int lines_to_down = abs(ev.wheel.y);
+			for (int i = 0; i < lines_to_down; i++)
+			{
+				this->con->HistoryDown();
+			}
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
@@ -766,6 +794,7 @@ void VT100::VT100HandleEvent(SDL_Event ev)
 		break;
 	}
 }
+
 /* Send characters to the terminal */
 void VT100::VT100Send(std::string sequence)
 {
@@ -811,9 +840,7 @@ void VT100::VT100CopyToClipboard()
 			int x = i % this->con->console_w;
 
 			/* Decode UTF-32 to UTF-8 */
-
 			uint32_t utf32 = this->con->ReadChar(x, y);
-			std::cout << "COPYING CHAR (UTF-32)" << (int)utf32 << std::endl;
 			if (utf32 < 0x80) 
 			{
 				result += (char)utf32;
@@ -837,7 +864,6 @@ void VT100::VT100CopyToClipboard()
 				result += (char)(0b10000000 | (utf32 & 0x3f));			// 10xxxxxx
 			}
 		}
-		std::cout << "-----" << std::endl;
 		CopyToClipboard(result);
 		this->is_selected = false;
 	}

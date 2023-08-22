@@ -3,7 +3,7 @@
 
 #include <string>
 
-#define CRTERM_VERSION_STRING "CRTerm 0.5.0a"
+#define CRTERM_VERSION_STRING "CRTerm 0.5.5"
 #define CRTERM_CREDIT_STRING "\xC2\xA9 Siddharth Gautam, 2023\nThis software comes with NO WARRANTY.\n"
 
 inline bool endsWith(std::string const& value, std::string const& ending)

@@ -11,7 +11,6 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL_gpu.h"
-#include "SDL_mixer.h"
 
 #include "CustomTitleBar.h"
 #include "Console.h"
@@ -117,8 +116,6 @@ int main(int argc, char* argv[])
 	*/
 	Win32SetWindowTransparency(cfg->opacity);
 
-	/* Set up audio, 22000 Hz, 2-channel */
-	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	/* Enable drop file */
 	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
@@ -151,6 +148,7 @@ int main(int argc, char* argv[])
 	tocallback[1] = (void*)cfg_edit;
 	tocallback[2] = (void*)cfg_load;
 
+
 	ContextMenu* cmenu = new ContextMenu(&menuCallBack, (void*)tocallback);
 	cmenu->show = true;
 	cmenu->Add("Copy");
@@ -173,7 +171,6 @@ int main(int argc, char* argv[])
 	int mouse_x = 0, mouse_y = 0;
 	SDL_GetMouseState(&mouse_x, &mouse_y);
 
-	Mix_Music* music = NULL;
 	const char* SDL_DROPFILE_file_resource = NULL;
 
 	while (!done)
@@ -193,32 +190,10 @@ int main(int argc, char* argv[])
 			{
 				std::string filename = std::string(ev.drop.file);
 				SDL_free(ev.drop.file);
-				/* Play music if MP3 */
-				if (endsWith(filename, ".mp3"))
-				{
-					CRTermSetWindowTitlePrefix(window, CRTERM_DEFAULT_MUSIC_TITLE_PREFIX);
-					if (music)
-					{
-						Mix_FreeMusic(music);
-						music = NULL;
-					}
-					music = Mix_LoadMUS(filename.c_str());
-					Mix_PlayMusic(music, -1);
-				}
-				/* Also send the file to the terminal stream */
+				/* Send the file to the terminal stream */
 				vt100_term->VT100Send(filename);
 			}
 				break; 
-			case SDL_KEYDOWN:
-				/* Stop playing Music on SDLK_end */
-				if (ev.key.keysym.sym == SDLK_END)
-				{
-					CRTermSetWindowTitlePrefix(window, CRTERM_DEFAULT_TITLE_PREFIX);
-					Mix_HaltMusic();
-					Mix_FreeMusic(music);
-					music = NULL;
-				}
-				break;
 			default:
 				break;
 			}
@@ -237,14 +212,12 @@ int main(int argc, char* argv[])
 			}
 		} 
 		GPU_ClearColor(screen, SDL_Color{ 52, 55, 64, 255 });
-		//GPU_ClearColor(screen, SDL_Color{ 0, 0, 0, 255 });
 		/* First render the terminal */
 		vt100_term->VT100Render();
 		/* Then the UI */
 		UI->Render();
 		GPU_Flip(screen);
 	}
-	Mix_CloseAudio();
 	SDL_Quit();
 	return 0;
 }

@@ -76,7 +76,7 @@ Console::Console(CRTermConfiguration* cfg, ConsoleFont* fnt)
 	/* Clear the console */
 	this->Clear();
 
-	this->old_frame_timer = Timer(800);
+	this->old_frame_timer = Timer(400);
 
 	/* Set shader parameters */
 	/* We set the permanent parameters here instead of every frame. */

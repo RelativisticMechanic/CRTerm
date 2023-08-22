@@ -19,10 +19,8 @@ uniform vec2 resolution;
 const float text_brightness_multiplier = 3.0;
 
 // Glow effect settings
-const float glow_size = 8.0;
-const float glow_directions = 16.0;
-const float glow_quality = 2.0;
-const float intensity = 1.0;
+const float glow_size = 1.0 / 512.0;
+const float intensity = 1.5;
 const float flicker_fraction = 0.15;
 const float flicker_speed = 20.0;
 
@@ -35,6 +33,8 @@ const float crt_noise_fraction = 0.10;
 // CRT Effect settings
 uniform float warp; 
 float scan = 0.75;
+float scanline_opacity = 0.3;
+float scanline_density = 0.5;
 float scanline_speed = 0.5;
 float scanline_intensity = 0.10;
 float scanline_spread = 0.2;
@@ -59,17 +59,29 @@ vec4 burnInEffect(in vec2 uv, in sampler2D prev_frame, in sampler2D curr_frame)
 /* The CRT glowing text effect, downsample, then upscale to cause a glowy blur */
 vec4 crtGlow(in sampler2D crt_texture, in vec2 uv, in float blurSize)
 {
-    /* Apply Gaussian Blur */
-    vec4 sum = vec4(0);
-    vec2 glow_radius = blurSize / resolution.xy;
-    for(float d = 0.0; d < TAU; d += TAU/glow_directions)
-    {
-		for(float i = 1.0/glow_quality; i <= 1.0; i += 1.0/glow_quality)
-        {
-			sum += texture(crt_texture, uv.xy + vec2(cos(d),sin(d)) * glow_radius * i);		
-        }
-    }
-    sum /= glow_quality * glow_directions - 15.0;
+    vec4 sum = vec4(0.0);
+    sum += texture(crt_texture, vec2(uv.x - 4.0*blurSize, uv.y)) * 0.05;
+    sum += texture(crt_texture, vec2(uv.x - 3.0*blurSize, uv.y)) * 0.09;
+    sum += texture(crt_texture, vec2(uv.x - 2.0*blurSize, uv.y)) * 0.12;
+    sum += texture(crt_texture, vec2(uv.x - blurSize, uv.y)) * 0.15;
+    sum += texture(crt_texture, vec2(uv.x, uv.y)) * 0.16;
+    sum += texture(crt_texture, vec2(uv.x + blurSize, uv.y)) * 0.15;
+    sum += texture(crt_texture, vec2(uv.x + 2.0*blurSize, uv.y)) * 0.12;
+    sum += texture(crt_texture, vec2(uv.x + 3.0*blurSize, uv.y)) * 0.09;
+    sum += texture(crt_texture, vec2(uv.x + 4.0*blurSize, uv.y)) * 0.05;
+        
+        // blur in y (vertical)
+    // take nine samples, with the distance blurSize between them
+    sum += texture(crt_texture, vec2(uv.x, uv.y - 4.0*blurSize)) * 0.05;
+    sum += texture(crt_texture, vec2(uv.x, uv.y - 3.0*blurSize)) * 0.09;
+    sum += texture(crt_texture, vec2(uv.x, uv.y - 2.0*blurSize)) * 0.12;
+    sum += texture(crt_texture, vec2(uv.x, uv.y - blurSize)) * 0.15;
+    sum += texture(crt_texture, vec2(uv.x, uv.y)) * 0.16;
+    sum += texture(crt_texture, vec2(uv.x, uv.y + blurSize)) * 0.15;
+    sum += texture(crt_texture, vec2(uv.x, uv.y + 2.0*blurSize)) * 0.12;
+    sum += texture(crt_texture, vec2(uv.x, uv.y + 3.0*blurSize)) * 0.09;
+    sum += texture(crt_texture, vec2(uv.x, uv.y + 4.0*blurSize)) * 0.05;
+
     vec4 result = sum * (intensity + flicker_fraction * intensity * sin(time*flicker_speed)) + text_brightness_multiplier * burnInEffect(uv, older_frame, crt_texture);
     
     return result;
@@ -173,8 +185,6 @@ void main(void)
 {
     /* Turn texCoord into distorted CRT coordinates */
     vec2 uv = BrownConradyDistortion(texCoord);
-    vec2 dc = abs(0.5-uv);
-    dc *= dc;
 
     if ((uv.y > 1.0 || uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0) && warp > 0.0)
     {
@@ -184,9 +194,14 @@ void main(void)
     else {
         float apply = abs(sin(texCoord.y)*0.5*scan);
         /* Add glow effect */
-    	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, vec3(0.0),apply),1.0);
+    	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, back_color,apply),1.0);
         /* Add scanline */
         fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;
+        /* Add horziontal scanlines */
+        float count = resolution.y * scanline_density;
+        vec2 sl = vec2(sin(uv.y * count), cos(uv.y * count));
+	    vec3 scanlines = vec3(sl.x, sl.y, sl.x);
+        fragColor.rgb += fragColor.rgb * scanlines * scanline_opacity;
         /* Mix with background image */
         fragColor = vec4(mix(fragColor.rgb, (texture(crt_background, uv).rgb), background_brightness),1.0);
         /* Add noise */
