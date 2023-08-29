@@ -1,8 +1,8 @@
 {
-    "font": "VGA437.ttf",
-    "font_scale": 1.2,
-    "console_width": 120,
-    "console_height": 40,
+    "font": "ProggySquare.ttf",
+    "font_scale": 1.5,
+    "console_width": 90,
+    "console_height": 30,
     "opacity": 1.0,
     "background": "background.png",
     "text_shader": "shaders/text",

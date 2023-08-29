@@ -419,7 +419,7 @@ void Console::Redraw(void)
 	{
 		GPU_SetUniformfv(GPU_GetUniformLocation(this->text_shader_id, "text_color"), 3, 1, this->colors[this->default_fore_color].returnArray());
 		/* Set selected text alpha to 0.4 */
-		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.4);
+		GPU_SetUniformf(GPU_GetUniformLocation(this->text_shader_id, "alpha"), 0.1);
 		for (int i = this->selected_start_x + this->selected_start_y * this->console_w; i < this->selected_end_x + this->selected_end_y * this->console_w; i++)
 		{
 

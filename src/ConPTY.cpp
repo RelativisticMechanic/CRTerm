@@ -90,6 +90,6 @@ HRESULT CreatePseudoConsoleAndPipes(HPCON* phPC, HANDLE* phPipeIn, HANDLE* phPip
         if (INVALID_HANDLE_VALUE != hPipePTYOut) CloseHandle(hPipePTYOut);
         if (INVALID_HANDLE_VALUE != hPipePTYIn) CloseHandle(hPipePTYIn);
     }
-
+ 
     return hr;
 }

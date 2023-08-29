@@ -33,10 +33,10 @@ const float crt_noise_fraction = 0.10;
 // CRT Effect settings
 uniform float warp; 
 float scan = 0.75;
-float scanline_opacity = 0.3;
-float scanline_density = 0.5;
+float scanline_opacity = 0.1;
+float scanline_density = 0.3;
 float scanline_speed = 0.5;
-float scanline_intensity = 0.10;
+float scanline_intensity = 0.15;
 float scanline_spread = 0.2;
 float vigenette_intensity = 0.25;
 float vignette_brightness = 50.0;
@@ -197,11 +197,6 @@ void main(void)
     	fragColor = vec4(mix(crtGlow(tex, uv, glow_size).rgb, back_color,apply),1.0);
         /* Add scanline */
         fragColor.rgb += fract(smoothstep(-1.0, 0.0, uv.y - 1.0 * fract(time * 0.1976))) * scanline_intensity * back_color;
-        /* Add horziontal scanlines */
-        float count = resolution.y * scanline_density;
-        vec2 sl = vec2(sin(uv.y * count), cos(uv.y * count));
-	    vec3 scanlines = vec3(sl.x, sl.y, sl.x);
-        fragColor.rgb += fragColor.rgb * scanlines * scanline_opacity;
         /* Mix with background image */
         fragColor = vec4(mix(fragColor.rgb, (texture(crt_background, uv).rgb), background_brightness),1.0);
         /* Add noise */
